@@ -1,0 +1,280 @@
+#!/usr/bin/env python
+"""A utility to monitor foam jobs."""
+import argparse
+import os
+from datetime import datetime
+import subprocess
+
+# global constants
+CONTROL_DICT_PATH = "system/controlDict"
+ENDTIME_KEY = "endTime"
+APPLICATION_KEY = "application"
+TIME_KEY = "Time"
+DATE_KEY = "Date"
+PID_KEY = "PID"
+ERROR_KEYS = ["FOAM FATAL ERROR", "FOAM FATAL IO ERROR"]
+CANCELLED_KEYS = ["CANCELLED"]
+STATE_FAILED = "F"
+STATE_CANCELLED = "CA"
+STATE_COMPLETED = "CD"
+STATE_RUNNING = "R"
+
+
+class Case():
+    """An object with the status of a foam case.
+
+    :param path: path to the foam case
+    :type path: str
+    :param jobid: jobid of slurm job
+    :type jobid: int
+    """
+
+    def __init__(self, path: str, jobid=None) -> None:
+        self.available = False
+        self.path = path
+        self.time = None
+        self.st = None
+        self.eta = None
+        self.pid = None
+        self.pct = None
+        self._start_time = None
+        self._end_time = None
+        self._log = None
+        self._app = None
+
+        if jobid:
+            self.pid = int(jobid)
+
+        # if "slurm" in kwargs.keys() and kwargs["slurm"]:
+
+    def _read_control(self) -> None:
+        """Read ``end_time`` and ``app`` from the controlDict."""
+        with open(os.path.join(self.path, CONTROL_DICT_PATH)) as fo:
+            for line in list(fo):
+                try:
+                    if line.split()[0] == ENDTIME_KEY:
+                        end_time = line.split()[-1]
+                        self._end_time = float(end_time.strip(";"))
+                    elif line.split()[0] == APPLICATION_KEY:
+                        app = line.split()[-1]
+                        self._app = app.strip(";")
+                except IndexError:
+                    pass
+
+                # break for loop if all needed data are read
+                if self._end_time and self._app:
+                    self._log = os.path.join(
+                        self.path, "log.{:s}".format(self._app)
+                    )
+                    break
+
+    def _update_time(self, log: str) -> None:
+        """Update the time.
+
+        Read the log file and get latest time stamp to update the time and
+        percentage.
+
+        :param log: log file of the foam job
+        :type log: str
+
+        """
+        # Read the file reverse and break loop if TIME_KEY is found in line
+        # and without a unit symbol.
+        eof = log.seek(0, 2)  # pointer to end of file
+
+        for i in range(0, eof):
+            log.seek(eof - i, 0)
+            line = log.readline()
+
+            if any(error in line for error in ERROR_KEYS):
+                self.st = STATE_FAILED
+                self.eta = str()
+            elif any(cancelled in line for cancelled in CANCELLED_KEYS):
+                self.st = STATE_CANCELLED
+                self.eta = str()
+            elif (TIME_KEY in line and line.split()[-1] != "s"):
+                self.time = float(line.split()[2])
+                pct = self.time/self._end_time*100
+                pct = round(pct, 0)
+                self.pct = int(pct)
+
+                # check if end_time is reached
+                if self.time == self._end_time:
+                    self.st = STATE_COMPLETED
+                    self.eta = str()
+                # assume state is running if no other state was set
+                elif not self.st:
+                    self.st = STATE_RUNNING
+                    self.update_eta(self._start_time)
+
+                break
+
+    def _read_log_head(self, log: str) -> None:
+        """Read the log head.
+
+        Read the log head of the foam job to get the PID and start time.
+
+        :param log: log file of the foam job
+        :type log: str
+        """
+        # Read the file forward and break loop if "Time" is found in line.
+        eof = log.seek(0, 2)  # pointer to end of file
+        start_date = None
+        start_time = None
+
+        for i in range(0, eof):
+            log.seek(i, 0)
+            line = log.readline()
+
+            # read start date
+            if DATE_KEY in line:
+                # trim trailing whitespace
+                start_date = line.strip().split(":")[-1]
+            # read start time
+            elif TIME_KEY in line:
+                # time from start of case till now
+                start_time = line.split()[-1]
+            elif start_time and start_date and not self._start_time:
+                self._start_time = datetime.strptime(
+                    "{:s} {:s}".format(start_time, start_date),
+                    "%H:%M:%S %b %d %Y"
+                )
+            # read PID
+            elif PID_KEY in line and not self.pid:
+                self.pid = int(line.split(":")[-1])
+            elif self._start_time and self.pid:
+                break
+
+    def update_eta(self, start_time: datetime) -> None:
+        """Update the 'estimated time of arrival'."""
+        if start_time and self.st == STATE_RUNNING:
+            elapsed_time = datetime.now() - start_time
+            needed_time = elapsed_time.total_seconds()/self.time*self._end_time
+            eta = needed_time - elapsed_time.total_seconds()
+            d = divmod(int(eta), 86400)
+            h = divmod(d[1], 3600)
+            m = divmod(h[1], 60)
+
+            if d[0] == 1:
+                dayStr = "day"
+            else:
+                dayStr = "days"
+
+            self.eta = "{:3d} {:<4s} {:2d}:{:02d}:{:02d}".format(
+                d[0], dayStr, h[0], m[0], m[1]
+            )
+        else:
+            self.eta = str()
+
+    def update(self) -> None:
+        """Update the state of a foam job."""
+        try:
+            if not (self._end_time and self._log):
+                self._read_control()
+
+            with open(self._log) as log:
+                if not (self._start_time and self.pid):
+                    self._read_log_head(log)
+
+                self._update_time(log)
+
+            self.available = True
+        except FileNotFoundError:
+            self.time = None
+            self.st = None
+            self.eta = None
+            self.pid = None
+            self.pct = None
+            self.available = False
+
+
+class Toast():
+    """Toast with the information of foam jobs.
+
+    :param cases: list of foam jobs
+    :type cases: list
+    """
+
+    def __init__(self, cases: list) -> None:
+        # print toast head
+        self._cases = cases
+        print(
+            "{:>5s}".format("PID"),
+            "{:>36s}".format("CASE"),
+            "{:>11s}".format("TIME"),
+            "{:3s}".format("PCT"),
+            "{:>3s}".format("ST"),
+            "{:>17s}".format("ETA")
+        )
+
+    def update(self) -> None:
+        for case in self._cases:
+            case.update()
+
+            if case.available:
+                try:
+                    print(
+                        "{:>5d}".format(case.pid),
+                        "{:>36s}".format(case.path[-36:]),
+                        "{:>11g}".format(case.time),
+                        "{:>3d}".format(case.pct),
+                        "{:>3s}".format(case.st),
+                        "{:>17s}".format(case.eta),
+                    )
+                except (ValueError, TypeError):
+                    pass
+
+
+def main(paths: list, **kwargs) -> None:
+    """Get foam job state of all cases and print state.
+
+    :param paths: paths to cases
+    :type paths: list
+    """
+    case_list = list()
+
+    for i in range(0, len(paths)):
+        if "jobid" in kwargs.keys() and kwargs["jobid"]:
+            case_list.append(Case(paths[i], jobid=kwargs["jobid"][i]))
+        else:
+            case_list.append(Case(paths[i]))
+
+    toast = Toast(case_list)
+    toast.update()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Show status of OpenFOAM application."
+    )
+    parser.add_argument("-dir", metavar="dir", help="case directory",
+                        type=str, nargs="+")
+    parser.add_argument("-s", "--slurm", action="store_true",
+                        help="get state of jobs that are run by slurm")
+    parser.add_argument("-u", "--user", help="filter slurm by user")
+    args = parser.parse_args()
+
+    if args.dir:
+        main(args.dir)
+    elif (args.slurm and args.user):
+        jobid = subprocess.check_output(
+            "squeue --user {:s} -o %A".format(args.user),
+            shell=True
+        )
+        jobid = jobid.decode("utf-8")
+        jobid = jobid.split()[1:]
+        cases = subprocess.check_output(
+            "squeue --user {:s} -o %Z".format(args.user),
+            shell=True
+        )
+        cases = cases.decode("utf-8")
+        cases = cases.split()[1:]
+        main(cases, jobid=jobid)
+    elif args.slurm:
+        jobid = subprocess.check_output("squeue -o %A", shell=True)
+        jobid = jobid.decode("utf-8")
+        jobid = jobid.split()[1:]
+        cases = subprocess.check_output("squeue -o %Z", shell=True)
+        cases = cases.decode("utf-8")
+        cases = cases.split()[1:]
+        main(cases, jobid=jobid)

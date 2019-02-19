@@ -1,0 +1,32 @@
+# build folder
+build
+
+# doc builds
+doc/build
+doc/source/reference/generated
+
+# python cache files
+__pycache__
+.cache
+
+# pyc files
+*.pyc
+
+# other files
+*~
+/.metadata/
+.project
+.pydevproject
+.settings/
+
+# scrivenWedge example
+example/scrivenWedge/scrivenWedge
+example/scrivenWedge/Allrun
+example/scrivenWedge/Allclean
+example/scrivenWedge/rmCases
+
+# forwardStep example
+example/forwardStep/forwardStep
+example/forwardStep/Allrun
+example/forwardStep/Allclean
+example/forwardStep/rmCases
