@@ -61,7 +61,7 @@ def mkCases(baseCase, caseStructure, caseData, hierarchy, writeDir=None):
         * 'tree': Creates the structure `parent/child/grandchild`.
     writeDir : str
         Copy the base case to this directory and generate cases inside
-        of it. Default is ``None``.  
+        of it. Default is ``None``.
 
     Returns
     -------
@@ -97,7 +97,7 @@ def mkCases(baseCase, caseStructure, caseData, hierarchy, writeDir=None):
                 shutil.copytree(baseCase, writeDir)
             except FileExistsError:
                 pass
-            
+
             CaseFoamStructure(writeDir, caseStructure, caseData, hierarchy)
         else:
             CaseFoamStructure(baseCase, caseStructure, caseData, hierarchy)
@@ -110,4 +110,3 @@ def mkCases(baseCase, caseStructure, caseData, hierarchy, writeDir=None):
     else:
         mkRmCases(baseCase, caseStructure)
         mkAllRunClean(baseCase)
-

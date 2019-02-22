@@ -8,5 +8,3 @@ from casefoam.core import *
 from casefoam.mkCases import *
 from casefoam import utility
 from postprocessing import *
-
-__version__ = '2.0'

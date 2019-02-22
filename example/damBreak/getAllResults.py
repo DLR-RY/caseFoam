@@ -16,7 +16,7 @@ U = loadProbeSolutions(probeDir, 'U', caseStructure, baseCase)
 # load surface data
 
 
-#plot Pressure
+# plot Pressure
 p.plot(marker='o', ls='')
 plt.xlabel('Time $t$')
 plt.ylabel('Pressure $p$')
@@ -24,7 +24,7 @@ plt.tight_layout()
 plt.show()
 
 
-#plot surface at 0.1 seconds
+# plot surface at 0.1 seconds
 surf = loadSurfaceSolution(surfaceDir, 'p_freeSurface.raw', caseStructure,
                            baseCase, 0.1)
 
@@ -36,7 +36,7 @@ plt.ylabel('$y$')
 plt.tight_layout()
 plt.show()
 
-#plot temperature at ther centre line at 0.1 seconds
+# plot temperature at ther centre line at 0.1 seconds
 # load set data
 centerLine = loadSetSolution(setDir, 'centreLine_T.xy', caseStructure,
                              baseCase, 0.1)
@@ -52,12 +52,10 @@ plt.show()
 # plot forces
 forcesDir = 'forces/0'
 forces = casefoam.loadForces(forcesDir, 'force.dat', caseStructure, baseCase)
-forces = forces.interpolate() # linear interpolation between index
-#plt.figure()
+forces = forces.interpolate()  # linear interpolation between index
+plt.figure()
 forces.loc[:, idx[:, 0]].plot()
 plt.xlabel('Time $t$')
 plt.ylabel('Force $F$')
-#plt.tight_layout()
+plt.tight_layout()
 plt.show()
-
-

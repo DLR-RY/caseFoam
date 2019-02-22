@@ -2,10 +2,10 @@
 """User postprocessing functions.
 
 User function to manipulate the solution data ``['x', 'y', 'z', 'values']``.
-The function must return DataFrame and the function has to take
+The function must return a pandas.DataFrame and the function has to take
 the parameters ``(caseComb, time, currentDataFrame, outputDf)``:
 
-def userFunction(caseComb, time, currentDataFrame):
+>>> def userFunction(caseComb, time, currentDataFrame):
     t = time
     minimum = currentDataFrame.iloc[:, 1].min()
     mean = currentDataFrame.iloc[:, 1].mean()
@@ -13,7 +13,6 @@ def userFunction(caseComb, time, currentDataFrame):
     df = pd.DataFrame(np.array([time, minimum, mean, maximum], ndmin=2),
     columns=['time', 'min', 'mean', 'max'])
     df = df.set_index('time')
-
     return df
 
 """
@@ -23,10 +22,10 @@ import pandas as pd
 
 
 def getFreeSurfaceWallAndCentre(caseComb, time, currentDataFrame, axis=0):
-    """return the max, min and mean of the given axis.
+    """Return the max, min and mean of the given axis.
 
-    axis argument can be given as keyword arguemtn in posField_to_timeSeries
-    .e.g (axis = 1)
+    Axis argument can be given as keyword argument in posField_to_timeSeries
+    .e.g (axis=1).
 
     """
     t = time
@@ -41,17 +40,13 @@ def getFreeSurfaceWallAndCentre(caseComb, time, currentDataFrame, axis=0):
 
 
 def getRadius(caseComb, time, currentDataFrame):
-    """return the max, min and mean of the radius.
-
-    """
+    """Return the max, min and mean of the radius."""
     r = np.sqrt(currentDataFrame.iloc[:, 0]**2 +
                 currentDataFrame.iloc[:, 1]**2 +
                 currentDataFrame.iloc[:, 2]**2)
 
-    df = pd.DataFrame(np.array(
-                            [time, r.min(), r.mean(), r.max()],
-                            ndmin=2
-                      ),
+    df = pd.DataFrame(np.array([time, r.min(), r.mean(), r.max()],
+                               ndmin=2),
                       columns=['time', 'min', 'mean', 'max'])
     df = df.set_index('time')
 
