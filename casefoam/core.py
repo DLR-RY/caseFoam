@@ -347,6 +347,8 @@ class CaseFoamStructure(CaseFoamManipulator, ParsedParameterFile):
                 #       after '#!stringManipulation' an error is raised because
                 #       'value' has then no keys.
                 if key == '#!bash':
+                    if '#!destination' in value:
+                        value = value.replace('#!destination', self.caseDir)
                     subprocess.call(value, shell=True)
                 # manipulate a string in file if #!stringManipulation is a key
                 elif '#!stringManipulation' in value.keys():
