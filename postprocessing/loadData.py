@@ -188,6 +188,8 @@ def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.'):
         Solution directory in the OpenFOAM case ``postProcessing`` directory.
     file : str
         File name of the solution file.
+    time : float
+        Point of time at which to load the field.
     caseStructure : list, optional
         List of parent, child and grandchild names::
 
