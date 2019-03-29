@@ -109,10 +109,10 @@ def __get_posField(solutionFile):
 
     try:
         suffix = os.path.splitext(solutionFile)[1]
-        if(suffix == '.xy' or suffix == '.raw'):
+        if suffix in ('.xy', '.raw'):
             return pd.read_csv(solutionFile, comment='#',
                                delim_whitespace=True, header=None)
-        elif(suffix == '.csv'):
+        elif suffix == '.csv':
             return pd.read_csv(solutionFile)
         else:
             raise Exception(
@@ -122,8 +122,6 @@ def __get_posField(solutionFile):
             )
     except FileNotFoundError:
         return None
-
-    return
 
 
 def time_series(solutionDir, file, caseStructure=None, baseCase='.',
@@ -160,17 +158,15 @@ def time_series(solutionDir, file, caseStructure=None, baseCase='.',
     cases, caseCombs = getCases(solutionDir, caseStructure, baseCase)
 
     for i, caseComb in enumerate(caseCombs):
-
         currentSolutionFile = os.path.join(cases[i], file)
         if os.path.exists(currentSolutionFile):
-
             currentDataFrame = __get_timeSeries(currentSolutionFile,
                                                 columnNames)
 
             counter = 0
             for variables in caseComb:
-                    currentDataFrame['var_' + str(counter)] = variables
-                    counter += 1
+                currentDataFrame['var_' + str(counter)] = variables
+                counter += 1
 
             currentDataFrame.index.name = 't'
             outputDf = outputDf.append(currentDataFrame)
@@ -179,8 +175,7 @@ def time_series(solutionDir, file, caseStructure=None, baseCase='.',
     return outputDf
 
 
-def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.',
-                     columnNames=None):
+def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.'):
     """Load positionalField(surfaces and sets).
 
     Loads a positionalField of a given case and save them into one
@@ -193,6 +188,8 @@ def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.',
         Solution directory in the OpenFOAM case ``postProcessing`` directory.
     file : str
         File name of the solution file.
+    time : float
+        Point of time at which to load the field.
     caseStructure : list, optional
         List of parent, child and grandchild names::
 
@@ -201,8 +198,6 @@ def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.',
              [grandchild1, grandchild2]]
     baseCase : str, optional
         Root directory of all cases.
-    columnNames : list, optional
-        List of columnNames.
 
     Returns
     -------
@@ -214,7 +209,6 @@ def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.',
     cases, caseCombs = getCases(solutionDir, caseStructure, baseCase)
 
     for i, caseComb in enumerate(caseCombs):
-
         currentSolutionFile = os.path.join(cases[i], str(time), file)
         if os.path.exists(currentSolutionFile):
             currentDataFrame = __get_posField(currentSolutionFile)
@@ -266,19 +260,18 @@ def posField_to_timeSeries(solutionDir, file, postFunction, caseStructure=None,
 
     Examples
     --------
-    Define a user ``postFunction`` with ``axis`` as keyword argument.
-    
-    >>> def userFunction(caseComb, time, currentDataFrame):
-    t = time
-    minimum = currentDataFrame.iloc[:, 1].min()
-    mean = currentDataFrame.iloc[:, 1].mean()
-    maximum = currentDataFrame.iloc[:, 1].max()
-    df = pd.DataFrame(np.array([time, minimum, mean, maximum],
-                        ndmin=2),
-                        columns=['time', 'min', 'mean', 'max'])
-    df = df.set_index('time')
+    Define a user ``postFunction``.
 
-    return df
+    >>> def userFunction(caseComb, time, currentDataFrame):
+        t = time
+        minimum = currentDataFrame.iloc[:, 1].min()
+        mean = currentDataFrame.iloc[:, 1].mean()
+        maximum = currentDataFrame.iloc[:, 1].max()
+        df = pd.DataFrame(np.array([time, minimum, mean, maximum],
+                          ndmin=2),
+                          columns=['time', 'min', 'mean', 'max'])
+        df = df.set_index('time')
+        return df
 
     """
     outputDf = pd.DataFrame()
@@ -295,8 +288,8 @@ def posField_to_timeSeries(solutionDir, file, postFunction, caseStructure=None,
 
             counter = 0
             for variables in caseComb:
-                    funcDataFrame['var_' + str(counter)] = variables
-                    counter += 1
+                funcDataFrame['var_' + str(counter)] = variables
+                counter += 1
             outputDf = outputDf.append(funcDataFrame)
             del surfaceDataFrame
 
