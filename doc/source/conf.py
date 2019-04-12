@@ -21,7 +21,7 @@ import os
 import sys
 import imp
       
-casefoam = imp.load_source('casefoam', '../../casefoam')
+casefoam = imp.load_source('casefoam', '../../')
 from casefoam import __version__
 
 sys.path.insert(0, os.path.abspath('../../'))
