@@ -1,5 +1,51 @@
 #!/usr/bin/env python
-"""A utility to monitor foam jobs."""
+"""Monitor OpenFOAM jobs.
+
+foamState
+=========
+
+Use ``foamState`` to monitor OpenFOAM jobs.  The jobs to monitor can be
+parsed as a list to ``foamState`` or if used on a cluster with Slurm, it
+can grep the information from the ``squeue``.
+
+Usage
+-----
+
+.. sourcecode:: bash
+
+   foamState [-h] [-dir dir [dir ...]] [-s] [-u USER]
+
+Optional arguments:
+
+* `-h, --help`: Show a help message.
+* `-dir`: Path to the case directories. Regular expressions can be used to pass multiple directories.
+* `-s, --slurm`: Get cases from the Slurm queue.
+* `-u, --user`: Filter the Slurm jobs by user
+
+Examples
+--------
+
+To monitor jobs in the directories `*/*`, simply run:
+
+.. sourcecode:: text
+
+   $ foamState -dir */*
+     PID                                 CASE        TIME PCT  ST               ETA
+   32622                            lam/Q5.5/      1911.9  24   F
+   30779                              ras/Q0/      3.1897   0   R 105 days  1:31:52
+   12103                            ras/Q5.5/     1391.28  17  CA
+
+To monitor cases controlled by Slurm for the user `foo` run the:
+
+.. sourcecode:: text
+
+   $ foamState -s -u foo
+     PID                                 CASE        TIME PCT  ST               ETA
+    1316           path/to/case/coarse/ras/Q0      3.7106   0   R 104 days 23:13:52
+
+The file that is being parsed needs to be named log.(SOLVERNAME) where the
+solver name is specified in the controlDict under application.
+"""
 import argparse
 import os
 from datetime import datetime
@@ -93,7 +139,10 @@ class Case():
                 self.st = STATE_CANCELLED
                 self.eta = str()
             elif (TIME_KEY in line and line.split()[-1] != "s"):
-                self.time = float(line.split()[2])
+                try:
+                    self.time = float(line.split()[2])
+                except ValueError:
+                    break
                 pct = self.time/self._end_time*100
                 pct = round(pct, 0)
                 self.pct = int(pct)
@@ -197,15 +246,18 @@ class Toast():
 
     def __init__(self, cases: list) -> None:
         # print toast head
-        self._cases = cases
-        print(
-            "{:>5s}".format("PID"),
-            "{:>36s}".format("CASE"),
-            "{:>11s}".format("TIME"),
-            "{:3s}".format("PCT"),
-            "{:>3s}".format("ST"),
-            "{:>17s}".format("ETA")
-        )
+        try:
+            self._cases = cases
+            print(
+                "{:>5s}".format("PID"),
+                "{:>36s}".format("CASE"),
+                "{:>11s}".format("TIME"),
+                "{:3s}".format("PCT"),
+                "{:>3s}".format("ST"),
+                "{:>17s}".format("ETA")
+            )
+        except (ValueError, TypeError):
+            pass
 
     def update(self) -> None:
         for case in self._cases:

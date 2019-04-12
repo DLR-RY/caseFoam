@@ -19,7 +19,14 @@ API documentation
 
    casefoam
    postprocessing
-   foamState
+
+Scripts
+=======
+
+.. toctree::
+   :maxdepth: 2
+
+   foamState.rst
    
 Indices and tables
 ==================
