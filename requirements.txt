@@ -4,13 +4,7 @@
 ###### Requirements without Version Specifiers ######
 pyfoam
 pandas
-shutil
-os
-sys
 collections
 re
 sphinx_rtd_theme
-argparse
-datetime
-subprocess
 imp
