@@ -4,7 +4,6 @@
 ###### Requirements without Version Specifiers ######
 pyfoam
 pandas
-collections
 re
 sphinx_rtd_theme
 imp
