@@ -1,3 +1,5 @@
+.. _index:
+
 .. CaseFOAM documentation master file
 
 .. include:: ../../README.rst
