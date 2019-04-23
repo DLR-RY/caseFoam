@@ -1,5 +1,9 @@
 .. _intro:
 
+.. image:: https://readthedocs.org/projects/casefoam/badge/?version=latest
+:target: https://casefoam.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
+
 =========================================================
 **CaseFOAM** - An OpenFOAM case manipulatior and creator.
 =========================================================

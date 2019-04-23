@@ -21,8 +21,9 @@ import sys
 import imp
 foamState = imp.load_source('foamState', '../../scripts/foamState')
 
-sys.path.insert(0, os.path.abspath('../../src'))
-sys.path.insert(0, os.path.abspath('../../scripts'))
+sys.path.insert(0, os.path.abspath('../../'))
+
+from casefoam import __version__
 
 # -----------------------------------------------------------------------------
 # General configuration
@@ -99,7 +100,18 @@ autosummary_generate = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+# -----------------------------------------------------------------------------
+# Options for HTML output
+# -----------------------------------------------------------------------------
+# The theme to use for HTML and HTML Help pages.  See the documentation for
+# a list of builtin themes.
+#
+on_rtd = os.environ.get('READTHEDOCS') == 'True'
+
+if on_rtd:
+    html_theme = 'default'
+else:
+    html_theme = 'sphinx_rtd_theme'
 html_theme_path = ['_themes', ]
 
 # Theme options are theme-specific and customize the look and feel of a theme
