@@ -1,0 +1,3 @@
+.. _foamState:
+
+.. automodule:: foamState
