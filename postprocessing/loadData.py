@@ -160,8 +160,13 @@ def time_series(solutionDir, file, caseStructure=None, baseCase='.',
     for i, caseComb in enumerate(caseCombs):
         currentSolutionFile = os.path.join(cases[i], file)
         if os.path.exists(currentSolutionFile):
-            currentDataFrame = __get_timeSeries(currentSolutionFile,
-                                                columnNames)
+            try:
+                currentDataFrame = __get_timeSeries(currentSolutionFile,
+                                                    columnNames)
+            except pd.errors.EmptyDataError:
+                print('Note: {} was empty. Skipping.'.format(currentSolutionFile))
+                continue
+
 
             counter = 0
             for variables in caseComb:
@@ -211,7 +216,11 @@ def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.'):
     for i, caseComb in enumerate(caseCombs):
         currentSolutionFile = os.path.join(cases[i], str(time), file)
         if os.path.exists(currentSolutionFile):
-            currentDataFrame = __get_posField(currentSolutionFile)
+            try:
+                currentDataFrame = __get_posField(currentSolutionFile)
+            except pd.errors.EmptyDataError:
+                print('Note: {} was empty. Skipping.'.format(currentSolutionFile))
+                continue
             counter = 0
             for variables in caseComb:
                 currentDataFrame['var_' + str(counter)] = variables
@@ -282,7 +291,11 @@ def posField_to_timeSeries(solutionDir, file, postFunction, caseStructure=None,
 
         for time in times:
             currentSolutionFile = os.path.join(cases[i], time, file)
-            surfaceDataFrame = __get_posField(currentSolutionFile)
+            try:
+                surfaceDataFrame = __get_posField(currentSolutionFile)
+            except pd.errors.EmptyDataError:
+                print('Note: {} was empty. Skipping.'.format(currentSolutionFile))
+                continue
             funcDataFrame = postFunction(
                 caseComb, float(time), surfaceDataFrame, **kwargs)
 
