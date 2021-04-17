@@ -16,11 +16,10 @@
 API documentation
 =================
 
-.. autosummary::
-   :toctree: reference
+.. toctree::
+   :maxdepth: 2
 
-   casefoam
-   postprocessing
+   reference/casefoam.rst
 
 Scripts
 =======
@@ -29,7 +28,7 @@ Scripts
    :maxdepth: 2
 
    foamState.rst
-   
+
 Indices and tables
 ==================
 

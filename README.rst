@@ -1,12 +1,18 @@
-.. _intro:
+=========================================================
+**CaseFOAM** - An OpenFOAM case manipulatior and creator.
+=========================================================
+
+
+
+.. start-badges
 
 .. image:: https://readthedocs.org/projects/casefoam/badge/?version=latest
 :target: https://casefoam.readthedocs.io/en/latest/?badge=latest
 :alt: Documentation Status
 
-=========================================================
-**CaseFOAM** - An OpenFOAM case manipulatior and creator.
-=========================================================
+.. end-badges
+
+.. _intro:
 
 This module is a addition to ``PyFoam`` and can automatically setup OpenFOAM
 cases with varying conditions.
@@ -57,7 +63,7 @@ of the column and perform a grid study for the damBreak test case:
 parameter studies
 -----------------
 
-The first step is the generation of the cases. We want to generate three 
+The first step is the generation of the cases. We want to generate three
 column heights where each case has three grids with a differnt cell size.
 
 .. sourcecode:: python
@@ -81,7 +87,7 @@ column heights where each case has three grids with a differnt cell size.
                                                               }
                                     }
         }
-        
+
     def update_height(height):
         return {
             'system/setFieldsDict': {'#!stringManipulation':
@@ -143,7 +149,7 @@ For that, we use the positional_field function and get a pandas dataframe which 
 
 .. sourcecode:: python
 
-    import casefoam 
+    import casefoam
     import matplotlib.pyplot as plt
     import pandas as pd
     import holoviews as hv
@@ -162,7 +168,7 @@ holoviews renders an interactive plot which can be exported as html:
 
 .. sourcecode:: python
 
-    %%opts Scatter [width=600,height=600,title='freeSurface at 0.3s',tools=['hover']] 
+    %%opts Scatter [width=600,height=600,title='freeSurface at 0.3s',tools=['hover']]
     %%opts (muted_alpha=0.0)
     surface_ds.to(hv.Scatter,'x','y').overlay('res')
 

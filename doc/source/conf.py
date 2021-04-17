@@ -19,9 +19,9 @@
 import os
 import sys
 import imp
-foamState = imp.load_source('foamState', '../../scripts/foamState')
+foamState = imp.load_source('foamState', '../../bin/foamState')
 
-sys.path.insert(0, os.path.abspath('../../'))
+sys.path.insert(0, os.path.abspath('../../src/'))
 
 from casefoam import __version__
 
@@ -44,7 +44,7 @@ extensions = ['sphinx.ext.autodoc',
               'numpydoc',
               'IPython.sphinxext.ipython_directive',
               'IPython.sphinxext.ipython_console_highlighting']
-
+autosummary_generate = True
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -172,7 +172,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'casefoam', 'CaseFOAM Documentation',
+    (master_doc, 'src/casefoam', 'CaseFOAM Documentation',
      [author], 1)
 ]
 

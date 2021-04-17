@@ -1,5 +1,5 @@
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
-import collections
+from collections.abc import Mapping
 import os
 import re
 import shutil
@@ -148,7 +148,7 @@ class CaseFoamManipulator(object):
         """
         def _innerUpdate(_param, _paramUp):
             for key, value in _paramUp.items():
-                if isinstance(value, collections.Mapping):
+                if isinstance(value, Mapping):
                     _param[key] = _innerUpdate(_param.get(key, {}), value)
                 else:
                     _param[key] = value

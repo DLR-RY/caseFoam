@@ -7,6 +7,7 @@ with variating conditions.
 from casefoam.core import *
 from casefoam.mkCases import *
 from casefoam import utility
-from postprocessing import *
+from casefoam.loadData import *
+from casefoam.postFunctions import *
 
 __version__ = '0.1'

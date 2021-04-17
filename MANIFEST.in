@@ -1,0 +1,9 @@
+graft src
+prune doc*
+
+graft doc/media
+include CHANGELOG.rst
+include LICENSE
+include README.rst
+
+global-exclude *.py[cod] __pycache__/* *.so *.dylib

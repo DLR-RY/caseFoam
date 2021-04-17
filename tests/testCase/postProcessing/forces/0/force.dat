@@ -1,0 +1,6 @@
+# Force
+# CofR        : (2.929541e+00 0.000000e+00 2.000000e-01)
+#
+# Time        	(total_x total_y total_z)	(pressure_x pressure_y pressure_z)	(viscous_x viscous_y viscous_z)
+0    	(1 1 1)	(2 2 2)	(3 3 3)
+1    	(1 1 1)	(2 2 2)	(3 3 3)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """User postprocessing functions.
 
 User function to manipulate the solution data ``['x', 'y', 'z', 'values']``.
