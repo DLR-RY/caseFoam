@@ -30,12 +30,17 @@ Installing CaseFOAM
 
 In order to use the Python module you need the ``PyFoam`` package.
 
-Run the ``setup.py``.
+install the package after cloning the repository with:
 
 .. sourcecode:: bash
 
-   $ python setup.py install
-   $ pip install pyfoam
+   $ pip install .
+ 
+ or via pypi by executing:
+ 
+.. sourcecode:: bash
+
+   $ pip install casefoam
 
 User's Guide
 ------------
