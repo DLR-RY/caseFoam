@@ -174,7 +174,7 @@ def time_series(solutionDir, file, caseStructure=None, baseCase='.',
                 counter += 1
 
             currentDataFrame.index.name = 't'
-            outputDf = outputDf.append(currentDataFrame)
+            outputDf = pd.concat([outputDf,currentDataFrame], axis=0, join='outer')
             del currentDataFrame
 
     return outputDf
@@ -226,7 +226,7 @@ def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.'):
                 currentDataFrame['var_' + str(counter)] = variables
                 counter += 1
 
-            outputDf = outputDf.append(currentDataFrame)
+            outputDf = pd.concat([outputDf,currentDataFrame], axis=0, join='outer')
             del currentDataFrame
 
     return outputDf
@@ -303,7 +303,7 @@ def posField_to_timeSeries(solutionDir, file, postFunction, caseStructure=None,
             for variables in caseComb:
                 funcDataFrame['var_' + str(counter)] = variables
                 counter += 1
-            outputDf = outputDf.append(funcDataFrame)
+            outputDf = pd.concat([outputDf,funcDataFrame], axis=0, join='outer')
             del surfaceDataFrame
 
     return outputDf
