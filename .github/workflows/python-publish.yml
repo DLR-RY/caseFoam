@@ -25,14 +25,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.x'
-          architecture: 'x64'
 
-      - name: Download wrappers
-        uses: actions/download-artifact@v1
-        with:
-          name: lib-wrapper
-          path: src/FMU4FOAM/resources
-    
       - name: Build distribution artifacts
         run: |
           python -m pip install --upgrade pip
