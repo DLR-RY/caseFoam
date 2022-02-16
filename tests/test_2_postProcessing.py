@@ -13,9 +13,9 @@ def test_time_series():
     solutionDir = "probes"
     file = "probeData"
     caseStructure = [['Ux1', 'Ux3'],
-                        ['T1'],
-                        ['p1'],
-                        ['string10']]
+                    ['T1'],
+                    ['p1'],
+                    ['string10']]
     baseCase = "Cases"
 
     df = casefoam.time_series(solutionDir, file, caseStructure,baseCase)
@@ -39,9 +39,9 @@ def test_forces():
     solutionDir = "forces/0"
     file = "force.dat"
     caseStructure = [['Ux1', 'Ux3'],
-                        ['T1'],
-                        ['p1'],
-                        ['string10']]
+                    ['T1'],
+                    ['p1'],
+                    ['string10']]
     baseCase = "Cases"
 
     F = casefoam.time_series(solutionDir, file, caseStructure,baseCase)
@@ -68,9 +68,9 @@ def test_freeSurface():
     solutionDir = "freeSurface"
     file = "p_freeSurface.raw"
     caseStructure = [['Ux1', 'Ux3'],
-                        ['T1'],
-                        ['p1'],
-                        ['string10']]
+                    ['T1'],
+                    ['p1'],
+                    ['string10']]
     baseCase = "Cases"
 
     surf = casefoam.positional_field(solutionDir, file, 0, caseStructure,baseCase)
@@ -88,9 +88,9 @@ def test_sample_timeSeries():
     solutionDir = "sample1"
     file = "centreLine_T.xy"
     caseStructure = [['Ux1', 'Ux3'],
-                        ['T1'],
-                        ['p1'],
-                        ['string10']]
+                    ['T1'],
+                    ['p1'],
+                    ['string10']]
     baseCase = "Cases"
 
     surf_time = casefoam.posField_to_timeSeries(solutionDir, file, getFreeSurfaceWallAndCentre, caseStructure,baseCase)
