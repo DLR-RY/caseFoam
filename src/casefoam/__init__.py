@@ -10,4 +10,4 @@ from casefoam import utility
 from casefoam.loadData import *
 from casefoam.postFunctions import *
 
-__version__ = '0.1'
+__version__ = '0.1.0'

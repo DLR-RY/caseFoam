@@ -25,3 +25,21 @@ version 0.0.3
 * First release on PyPI.
 
 
+version 0.0.4
+=============
+
+0.0.4 (2021-04-14)
+------------------
+
+* First release on PyPI.
+
+version 0.1.0
+=============
+
+0.1.0 (2022-02-16)
+------------------
+
+* added CI
+* replaced append with concat
+
+
