@@ -17,7 +17,7 @@ def read(*names, **kwargs):
         return fh.read()
 setup(
     name='casefoam',
-    version='0.1.0',
+    version='0.1.1',
     license='GPLv3',
     description='Create and manipulate OpenFOAM cases',
     long_description='%s\n%s' % (

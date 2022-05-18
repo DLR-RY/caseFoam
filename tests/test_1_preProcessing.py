@@ -1,6 +1,9 @@
 # pytest has to be run from project root directory!
+from unittest import case
 import casefoam
 import os
+
+from casefoam.utility import of_cases
 
 # generate testPostProcessing cases
 def test_buildCase():
@@ -73,6 +76,9 @@ def test_checkFiles():
     cwd = os.getcwd()
     dir_path = os.path.dirname(os.path.realpath(__file__))
     os.chdir(dir_path)
+    of_cases = casefoam.of_cases("Cases")
+    assert 'Cases/Ux3/T1/p1/string10' in of_cases
+    assert 'Cases/Ux1/T1/p1/string10' in of_cases
 
     assert 'rmCases' in os.listdir()
     assert 'Allrun' in os.listdir()

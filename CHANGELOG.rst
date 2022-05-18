@@ -42,4 +42,12 @@ version 0.1.0
 * added CI
 * replaced append with concat
 
+version 0.1.1
+=============
+
+0.1.1 (2022-05-18)
+------------------
+
+* new Function: of_cases finds all OpenFOAM cases in folder
+
 

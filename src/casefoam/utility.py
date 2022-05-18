@@ -5,7 +5,7 @@ A set of utilities to use with CaseFOAM.
 """
 import os
 import PyFoam.RunDictionary.ParsedParameterFile as PPF
-
+from typing import List
 
 def mkRmCases(baseCase, cases, isWriteDir=False):
     """Make case remove file.
@@ -128,3 +128,43 @@ def getFileStructure(file):
     """
     fileStructure = PPF.ParsedParameterFile(file)
     return fileStructure.content
+
+
+def _of_case(dirnames: List[str],filenames: List[str]) -> bool:
+    """classify directory as OpenFOAM case
+
+    Parameters
+    ----------
+    dirnames : List[str]
+        list of directories in the folder
+    filenames : List[str]
+        list of files in the folder
+
+    Returns
+    ofcase : bool
+        is the folder an OpenFOAM Case
+    """
+    if "constant" in dirnames and "system" in dirnames:
+        return True
+    return False
+
+
+def of_cases(dir_name: str) -> List[str]:
+    """list all OpenFOAM cases in folder
+
+    Parameters
+    ----------
+    dir_name : str
+        name of the search directory
+
+    Returns
+    ofcases : List[str]
+        pathes of the OpenFOAM directories
+    """
+    cases = []
+    for path, dirnames, filenames in os.walk(dir_name):
+        if _of_case(dirnames,filenames):
+            if "baseCase" not in path:
+                cases.append(path)
+            dirnames[:] = []
+    return cases
