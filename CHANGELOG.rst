@@ -58,13 +58,15 @@ version 0.2.0
 
 * new Function: profiling allows to load profiling data from OpenFOAM
 
-add profiling to system controlDict
-profiling
-{
-    active      true;
-    cpuInfo     false;
-    memInfo     false;
-    sysInfo     false;
-}
+.. sourcecode:: cpp
+    add profiling to system controlDict:
+    profiling
+    {
+        active      true;
+        cpuInfo     false;
+        memInfo     false;
+        sysInfo     false;
+    }
 
-prof = casefoam.profiling(time=0,processorDir="", caseStructure=caseStructure,baseCase=baseCase)
+.. sourcecode:: python
+    prof = casefoam.profiling(time=0,processorDir="", caseStructure=caseStructure,baseCase=baseCase)
