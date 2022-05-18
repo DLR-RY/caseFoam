@@ -50,4 +50,21 @@ version 0.1.1
 
 * new Function: of_cases finds all OpenFOAM cases in folder
 
+version 0.2.0
+=============
 
+0.2.0 (2022-05-18)
+------------------
+
+* new Function: profiling allows to load profiling data from OpenFOAM
+
+add profiling to system controlDict
+profiling
+{
+    active      true;
+    cpuInfo     false;
+    memInfo     false;
+    sysInfo     false;
+}
+
+prof = casefoam.profiling(time=0,processorDir="", caseStructure=caseStructure,baseCase=baseCase)

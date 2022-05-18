@@ -11,4 +11,4 @@ from casefoam.loadData import *
 from casefoam.postFunctions import *
 from casefoam.utility import of_cases
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'

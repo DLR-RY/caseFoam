@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-
+from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
 def getCases(solutionDir, caseStructure, baseCase, postDir='postProcessing'):
     """Get cases.
@@ -218,6 +218,60 @@ def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.'):
         if os.path.exists(currentSolutionFile):
             try:
                 currentDataFrame = __get_posField(currentSolutionFile)
+            except pd.errors.EmptyDataError:
+                print('Note: {} was empty. Skipping.'.format(currentSolutionFile))
+                continue
+            counter = 0
+            for variables in caseComb:
+                currentDataFrame['var_' + str(counter)] = variables
+                counter += 1
+
+            outputDf = pd.concat([outputDf,currentDataFrame], axis=0, join='outer')
+            del currentDataFrame
+
+    return outputDf
+
+
+def profiling(time,processorDir="", caseStructure=None, baseCase='.', file="profiling"):
+    """Load positionalField(surfaces and sets).
+
+    Loads a positionalField of a given case and save them into one
+    pandas.DataFrame. multiple cases can be combined with the caseStructure
+    argument
+
+    Parameters
+    ----------
+    time : float
+        Point of time at which to load the field.
+    processorDir : str, optional
+        Solution directory in the OpenFOAM case ``postProcessing`` directory.
+        Root directory of all cases.
+    file : str, optional
+        File name of the solution file.
+    caseStructure : list, optional
+        List of parent, child and grandchild names::
+
+            [[parent1, parent2],
+             [child1, child2, child3],
+             [grandchild1, grandchild2]]
+    baseCase : str, optional
+
+    Returns
+    -------
+    outputDf : pandas.DataFrame
+        pandas.DataFrame with solutions for all times.
+
+    """
+    outputDf = pd.DataFrame()
+    cases, caseCombs = getCases("", caseStructure, baseCase,postDir=processorDir)
+
+    for i, caseComb in enumerate(caseCombs):
+        currentSolutionFile = os.path.join(cases[i], str(time),"uniform", file)
+        if os.path.exists(currentSolutionFile):
+            try:
+                prof = ParsedParameterFile(currentSolutionFile)
+                currentDataFrame = pd.DataFrame(prof["profiling"]).T
+                currentDataFrame = currentDataFrame.reset_index(drop=True)
             except pd.errors.EmptyDataError:
                 print('Note: {} was empty. Skipping.'.format(currentSolutionFile))
                 continue

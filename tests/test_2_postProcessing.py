@@ -6,6 +6,7 @@ from subprocess import Popen,PIPE
 
 
 def test_time_series():
+    
     cwd = os.getcwd()
     dir_path = os.path.dirname(os.path.realpath(__file__))
     os.chdir(dir_path)
@@ -32,6 +33,7 @@ def test_time_series():
     os.chdir(cwd)
 
 def test_forces():
+
     cwd = os.getcwd()
     dir_path = os.path.dirname(os.path.realpath(__file__))
     os.chdir(dir_path)
@@ -61,6 +63,7 @@ def test_forces():
 
 
 def test_freeSurface():
+
     cwd = os.getcwd()
     dir_path = os.path.dirname(os.path.realpath(__file__))
     os.chdir(dir_path)
@@ -100,6 +103,28 @@ def test_sample_timeSeries():
     assert len(grouped_df.size()) == 2
     assert surf_time['min'].max() == 0
     assert surf_time['max'].max() == 1
+
+    os.chdir(cwd)
+
+def test_sample_profiling():
+
+    cwd = os.getcwd()
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    os.chdir(dir_path)
+
+    solutionDir = "sample1"
+    file = "centreLine_T.xy"
+    caseStructure = [['Ux1', 'Ux3'],
+                    ['T1'],
+                    ['p1'],
+                    ['string10']]
+    baseCase = "Cases"
+
+    prof = casefoam.profiling(0,processorDir="", caseStructure=caseStructure,baseCase=baseCase)
+    mask = prof["description"].str.contains('application::main')
+    prof = prof[mask]
+
+    assert len(prof) == 2
 
     os.chdir(cwd)
 

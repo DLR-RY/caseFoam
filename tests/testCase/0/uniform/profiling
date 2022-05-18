@@ -1,0 +1,297 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2112                                  |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    arch        "LSB;label=32;scalar=64";
+    class       dictionary;
+    location    "0.5/uniform";
+    object      profiling;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+profiling
+{
+    trigger0
+    {
+        id              0;
+        description     "application::main";
+        calls           1;
+        totalTime       0.324065824;
+        childTime       0.315579454;
+        active          true;
+    }
+
+    trigger8
+    {
+        id              8;
+        parentId        0;
+        description     "time.run() x020";
+        calls           400;
+        totalTime       0.311503376;
+        childTime       0.282691657;
+        active          true;
+    }
+
+    trigger1
+    {
+        id              1;
+        parentId        0;
+        description     "void Foam::interface::plicRDF::setInitNormals(bool)";
+        calls           1;
+        totalTime       0.000789868;
+        childTime       7.3279e-05;
+        active          false;
+    }
+
+    trigger2
+    {
+        id              2;
+        parentId        1;
+        description     "void Foam::interface::plicRDF::gradSurf(const volScalarField&)";
+        calls           1;
+        totalTime       7.3279e-05;
+        childTime       0;
+        active          false;
+    }
+
+    trigger3
+    {
+        id              3;
+        parentId        0;
+        description     "functionObjects::read";
+        calls           1;
+        totalTime       0.001592731;
+        childTime       0.001541293;
+        active          false;
+    }
+
+    trigger4
+    {
+        id              4;
+        parentId        3;
+        description     "functionObject::volumeFractionError::new";
+        calls           1;
+        totalTime       0.001541293;
+        childTime       0;
+        active          false;
+    }
+
+    trigger5
+    {
+        id              5;
+        parentId        0;
+        description     "functionObject::volumeFractionError::adjustTimeStep";
+        calls           1;
+        totalTime       7.885e-06;
+        childTime       0;
+        active          false;
+    }
+
+    trigger6
+    {
+        id              6;
+        parentId        0;
+        description     "functionObjects.start()";
+        calls           1;
+        totalTime       2.2854e-05;
+        childTime       1.9808e-05;
+        active          false;
+    }
+
+    trigger7
+    {
+        id              7;
+        parentId        6;
+        description     "functionObjects::read";
+        calls           1;
+        totalTime       1.9808e-05;
+        childTime       0;
+        active          false;
+    }
+
+    trigger9
+    {
+        id              9;
+        parentId        8;
+        description     "functionObject::volumeFractionError::adjustTimeStep";
+        calls           400;
+        totalTime       0.000233427;
+        childTime       0;
+        active          false;
+    }
+
+    trigger10
+    {
+        id              10;
+        parentId        8;
+        description     "void Foam::advection::isoAdvection<interfaceRepresentation>::advect(const RdeltaTType&, const SpType&, const SuType&) [with RdeltaTType = double; SpType = Foam::DimensionedField<double, Foam::volMesh>; SuType = Foam::DimensionedField<double, Foam::volMesh>; interfaceRepresentation = Foam::interface::plicRDF]";
+        calls           400;
+        totalTime       0.282250213;
+        childTime       0.269421744;
+        active          false;
+    }
+
+    trigger11
+    {
+        id              11;
+        parentId        10;
+        description     "virtual void Foam::interface::plicRDF::reconstruct(bool)";
+        calls           400;
+        totalTime       0.233871191;
+        childTime       0.052421804;
+        active          false;
+    }
+
+    trigger12
+    {
+        id              12;
+        parentId        11;
+        description     "void Foam::interface::plicRDF::setInitNormals(bool)";
+        calls           400;
+        totalTime       0.019905877;
+        childTime       0.01325644;
+        active          false;
+    }
+
+    trigger13
+    {
+        id              13;
+        parentId        12;
+        description     "void Foam::interface::plicRDF::interpolateNormal()";
+        calls           400;
+        totalTime       0.01325644;
+        childTime       0;
+        active          false;
+    }
+
+    trigger14
+    {
+        id              14;
+        parentId        11;
+        description     "void Foam::interface::plicRDF::centreAndNormalBC()";
+        calls           844;
+        totalTime       0.007201818;
+        childTime       0;
+        active          false;
+    }
+
+    trigger15
+    {
+        id              15;
+        parentId        11;
+        description     "void Foam::interface::plicRDF::gradSurf(const volScalarField&)";
+        calls           844;
+        totalTime       0.016430807;
+        childTime       0;
+        active          false;
+    }
+
+    trigger16
+    {
+        id              16;
+        parentId        11;
+        description     "void Foam::interface::plicRDF::calcResidual(Foam::List<Foam::interface::plicRDF::normalRes>&)";
+        calls           844;
+        totalTime       0.008883302;
+        childTime       0;
+        active          false;
+    }
+
+    trigger17
+    {
+        id              17;
+        parentId        10;
+        description     "void Foam::advection::isoAdvection<interfaceRepresentation>::timeIntegratedFlux(const RdeltaTType&) [with RdeltaTType = double; interfaceRepresentation = Foam::interface::plicRDF]";
+        calls           400;
+        totalTime       0.028580399;
+        childTime       0;
+        active          false;
+    }
+
+    trigger18
+    {
+        id              18;
+        parentId        10;
+        description     "void Foam::advection::isoAdvection<interfaceRepresentation>::limitFluxes(const RdeltaTType&, const SpType&, const SuType&) [with RdeltaTType = double; SpType = Foam::DimensionedField<double, Foam::volMesh>; SuType = Foam::DimensionedField<double, Foam::volMesh>; interfaceRepresentation = Foam::interface::plicRDF]";
+        calls           400;
+        totalTime       0.00625652;
+        childTime       0.000675143;
+        active          false;
+    }
+
+    trigger19
+    {
+        id              19;
+        parentId        10;
+        description     "void Foam::advection::isoAdvection<interfaceRepresentation>::applyBruteForceBounding() [with interfaceRepresentation = Foam::interface::plicRDF]";
+        calls           400;
+        totalTime       0.000713634;
+        childTime       0;
+        active          false;
+    }
+
+    trigger20
+    {
+        id              20;
+        parentId        0;
+        description     "functionObjects.execute()";
+        calls           399;
+        totalTime       0.00166274;
+        childTime       0.001293444;
+        active          false;
+    }
+
+    trigger21
+    {
+        id              21;
+        parentId        20;
+        description     "functionObject::volumeFractionError::execute";
+        calls           399;
+        totalTime       0.000255439;
+        childTime       0;
+        active          false;
+    }
+
+    trigger22
+    {
+        id              22;
+        parentId        20;
+        description     "functionObject::volumeFractionError:write";
+        calls           399;
+        totalTime       0.001038005;
+        childTime       0;
+        active          false;
+    }
+
+    trigger23
+    {
+        id              23;
+        parentId        18;
+        description     "void Foam::advection::isoAdvection<interfaceRepresentation>::boundFlux(const Foam::bitSet&, Foam::surfaceScalarField&, Foam::DynamicList<int>&, const RdeltaTType&, const SpType&, const SuType&) [with RdeltaTType = double; SpType = Foam::DimensionedField<double, Foam::volMesh>; SuType = Foam::DimensionedField<double, Foam::volMesh>; interfaceRepresentation = Foam::interface::plicRDF; Foam::surfaceScalarField = Foam::GeometricField<double, Foam::fvsPatchField, Foam::surfaceMesh>]";
+        calls           101;
+        totalTime       0.000675143;
+        childTime       0;
+        active          false;
+    }
+
+    trigger24
+    {
+        id              24;
+        parentId        8;
+        description     "objectRegistry::writeObject";
+        calls           1;
+        totalTime       0.000208017;
+        childTime       0;
+        active          false;
+    }
+}
+
+
+// ************************************************************************* //
