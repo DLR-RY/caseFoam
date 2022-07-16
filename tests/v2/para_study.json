@@ -1,0 +1,105 @@
+{
+  "base_case": "testCase",
+  "writeDir": "Cases",
+  "structure": "tree",
+  "categories": [
+    {
+      "name": "var_0",
+      "instructions": [
+        {
+          "instruction_type": "of_dict",
+          "file_name": "0/U",
+          "entry": "boundary/inlet/value"
+        }
+      ]
+    },
+    {
+      "name": "var_1",
+      "instructions": [
+        {
+          "instruction_type": "of_dict",
+          "file_name": "0/T",
+          "entry": "boundary/inlet/value"
+        }
+      ]
+    },
+    {
+      "name": "var_2",
+      "instructions": [
+        {
+          "instruction_type": "of_dict",
+          "file_name": "0/p",
+          "entry": "boundary/inlet/value"
+        }
+      ]
+    },
+    {
+      "name": "var_3",
+      "instructions": [
+        {
+          "instruction_type": "string",
+          "file_name": "system/stringTest.txt",
+          "entry": "STRINGMARKER"
+        }
+      ]
+    }
+  ],
+  "study_data": [
+    {
+      "case_data": [
+        {
+          "cat_name": "Ux1",
+          "values": [
+            1
+          ]
+        },
+        {
+          "cat_name": "T1",
+          "values": [
+            1
+          ]
+        },
+        {
+          "cat_name": "p1",
+          "values": [
+            1
+          ]
+        },
+        {
+          "cat_name": "string10",
+          "values": [
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "case_data": [
+        {
+          "cat_name": "Ux3",
+          "values": [
+            3
+          ]
+        },
+        {
+          "cat_name": "T1",
+          "values": [
+            1
+          ]
+        },
+        {
+          "cat_name": "p1",
+          "values": [
+            1
+          ]
+        },
+        {
+          "cat_name": "string10",
+          "values": [
+            10
+          ]
+        }
+      ]
+    }
+  ]
+}
