@@ -31,22 +31,27 @@ def getFreeSurfaceWallAndCentre(caseComb, time, currentDataFrame, axis=0):
     minimum = currentDataFrame.iloc[:, axis].min()
     mean = currentDataFrame.iloc[:, axis].mean()
     maximum = currentDataFrame.iloc[:, axis].max()
-    df = pd.DataFrame(np.array([time, minimum, mean, maximum], ndmin=2),
-                      columns=['time', 'min', 'mean', 'max'])
-    df = df.set_index('time')
+    df = pd.DataFrame(
+        np.array([time, minimum, mean, maximum], ndmin=2),
+        columns=["time", "min", "mean", "max"],
+    )
+    df = df.set_index("time")
 
     return df
 
 
 def getRadius(caseComb, time, currentDataFrame):
     """Return the max, min and mean of the radius."""
-    r = np.sqrt(currentDataFrame.iloc[:, 0]**2 +
-                currentDataFrame.iloc[:, 1]**2 +
-                currentDataFrame.iloc[:, 2]**2)
+    r = np.sqrt(
+        currentDataFrame.iloc[:, 0] ** 2
+        + currentDataFrame.iloc[:, 1] ** 2
+        + currentDataFrame.iloc[:, 2] ** 2
+    )
 
-    df = pd.DataFrame(np.array([time, r.min(), r.mean(), r.max()],
-                               ndmin=2),
-                      columns=['time', 'min', 'mean', 'max'])
-    df = df.set_index('time')
+    df = pd.DataFrame(
+        np.array([time, r.min(), r.mean(), r.max()], ndmin=2),
+        columns=["time", "min", "mean", "max"],
+    )
+    df = df.set_index("time")
 
     return df

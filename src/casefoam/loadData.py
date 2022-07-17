@@ -2,7 +2,8 @@ import os
 import pandas as pd
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
-def getCases(solutionDir, caseStructure, baseCase, postDir='postProcessing'):
+
+def getCases(solutionDir, caseStructure, baseCase, postDir="postProcessing"):
     """Get cases.
 
     Get cases out of the ``caseStructure`` that contain a solution directory.
@@ -24,7 +25,7 @@ def getCases(solutionDir, caseStructure, baseCase, postDir='postProcessing'):
         A list with all case combinations as tuples.
 
     """
-    if(caseStructure is None):
+    if caseStructure is None:
         return [os.path.join(baseCase, postDir, solutionDir)], [(baseCase,)]
 
     multiIndex = pd.MultiIndex.from_product(caseStructure)
@@ -78,14 +79,23 @@ def __get_timeSeries(solutionFile, columnNames=None):
         columns will be ``[1, 2, ..., n]``.
 
     """
-    _outputDf = pd.read_csv(solutionFile, comment='#',
-                            sep='[() \t]+', engine='python', header=None)
+    _outputDf = pd.read_csv(
+        solutionFile, comment="#", sep="[() \t]+", engine="python", header=None
+    )
     # drop last column as it terminates with
-    if(pd.isnull(_outputDf.iloc[0, -1])):
-        _outputDf.drop(_outputDf.columns[[-1, ]], axis=1, inplace=True)
+    if pd.isnull(_outputDf.iloc[0, -1]):
+        _outputDf.drop(
+            _outputDf.columns[
+                [
+                    -1,
+                ]
+            ],
+            axis=1,
+            inplace=True,
+        )
 
     _outputDf.set_index(0, inplace=True)
-    if(columnNames is not None):
+    if columnNames is not None:
         _outputDf.columns = columnNames
 
     return _outputDf
@@ -109,23 +119,25 @@ def __get_posField(solutionFile):
 
     try:
         suffix = os.path.splitext(solutionFile)[1]
-        if suffix in ('.xy', '.raw'):
-            return pd.read_csv(solutionFile, comment='#',
-                               delim_whitespace=True, header=None)
-        elif suffix == '.csv':
+        if suffix in (".xy", ".raw"):
+            return pd.read_csv(
+                solutionFile, comment="#", delim_whitespace=True, header=None
+            )
+        elif suffix == ".csv":
             return pd.read_csv(solutionFile)
         else:
             raise Exception(
-                'File Format : ', suffix, ' is not supported only xy ',
-                'raw csv. Please change the setFormat or',
-                'surfaceFormat in the ``controlDict`` to ``csv`` or ``raw``'
+                "File Format : ",
+                suffix,
+                " is not supported only xy ",
+                "raw csv. Please change the setFormat or",
+                "surfaceFormat in the ``controlDict`` to ``csv`` or ``raw``",
             )
     except FileNotFoundError:
         return None
 
 
-def time_series(solutionDir, file, caseStructure=None, baseCase='.',
-                columnNames=None):
+def time_series(solutionDir, file, caseStructure=None, baseCase=".", columnNames=None):
     """Load timeSeries(e.g probes, forces etc)
 
     Loads a timeseries of a given case and save them into one pandas.DataFrame.
@@ -161,26 +173,24 @@ def time_series(solutionDir, file, caseStructure=None, baseCase='.',
         currentSolutionFile = os.path.join(cases[i], file)
         if os.path.exists(currentSolutionFile):
             try:
-                currentDataFrame = __get_timeSeries(currentSolutionFile,
-                                                    columnNames)
+                currentDataFrame = __get_timeSeries(currentSolutionFile, columnNames)
             except pd.errors.EmptyDataError:
-                print('Note: {} was empty. Skipping.'.format(currentSolutionFile))
+                print("Note: {} was empty. Skipping.".format(currentSolutionFile))
                 continue
-
 
             counter = 0
             for variables in caseComb:
-                currentDataFrame['var_' + str(counter)] = variables
+                currentDataFrame["var_" + str(counter)] = variables
                 counter += 1
 
-            currentDataFrame.index.name = 't'
-            outputDf = pd.concat([outputDf,currentDataFrame], axis=0, join='outer')
+            currentDataFrame.index.name = "t"
+            outputDf = pd.concat([outputDf, currentDataFrame], axis=0, join="outer")
             del currentDataFrame
 
     return outputDf
 
 
-def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.'):
+def positional_field(solutionDir, file, time, caseStructure=None, baseCase="."):
     """Load positionalField(surfaces and sets).
 
     Loads a positionalField of a given case and save them into one
@@ -219,20 +229,22 @@ def positional_field(solutionDir, file, time, caseStructure=None, baseCase='.'):
             try:
                 currentDataFrame = __get_posField(currentSolutionFile)
             except pd.errors.EmptyDataError:
-                print('Note: {} was empty. Skipping.'.format(currentSolutionFile))
+                print("Note: {} was empty. Skipping.".format(currentSolutionFile))
                 continue
             counter = 0
             for variables in caseComb:
-                currentDataFrame['var_' + str(counter)] = variables
+                currentDataFrame["var_" + str(counter)] = variables
                 counter += 1
 
-            outputDf = pd.concat([outputDf,currentDataFrame], axis=0, join='outer')
+            outputDf = pd.concat([outputDf, currentDataFrame], axis=0, join="outer")
             del currentDataFrame
 
     return outputDf
 
 
-def profiling(time,processorDir="", caseStructure=None, baseCase='.', file="profiling"):
+def profiling(
+    time, processorDir="", caseStructure=None, baseCase=".", file="profiling"
+):
     """Load positionalField(surfaces and sets).
 
     Loads a positionalField of a given case and save them into one
@@ -263,31 +275,32 @@ def profiling(time,processorDir="", caseStructure=None, baseCase='.', file="prof
 
     """
     outputDf = pd.DataFrame()
-    cases, caseCombs = getCases("", caseStructure, baseCase,postDir=processorDir)
+    cases, caseCombs = getCases("", caseStructure, baseCase, postDir=processorDir)
 
     for i, caseComb in enumerate(caseCombs):
-        currentSolutionFile = os.path.join(cases[i], str(time),"uniform", file)
+        currentSolutionFile = os.path.join(cases[i], str(time), "uniform", file)
         if os.path.exists(currentSolutionFile):
             try:
                 prof = ParsedParameterFile(currentSolutionFile)
                 currentDataFrame = pd.DataFrame(prof["profiling"]).T
                 currentDataFrame = currentDataFrame.reset_index(drop=True)
             except pd.errors.EmptyDataError:
-                print('Note: {} was empty. Skipping.'.format(currentSolutionFile))
+                print("Note: {} was empty. Skipping.".format(currentSolutionFile))
                 continue
             counter = 0
             for variables in caseComb:
-                currentDataFrame['var_' + str(counter)] = variables
+                currentDataFrame["var_" + str(counter)] = variables
                 counter += 1
 
-            outputDf = pd.concat([outputDf,currentDataFrame], axis=0, join='outer')
+            outputDf = pd.concat([outputDf, currentDataFrame], axis=0, join="outer")
             del currentDataFrame
 
     return outputDf
 
 
-def posField_to_timeSeries(solutionDir, file, postFunction, caseStructure=None,
-                           baseCase='.', **kwargs):
+def posField_to_timeSeries(
+    solutionDir, file, postFunction, caseStructure=None, baseCase=".", **kwargs
+):
     """Converts multiple posionalFields to timeSeries with a function
 
     Load all postional Fields of a given case, manipulate the data for each
@@ -348,16 +361,17 @@ def posField_to_timeSeries(solutionDir, file, postFunction, caseStructure=None,
             try:
                 surfaceDataFrame = __get_posField(currentSolutionFile)
             except pd.errors.EmptyDataError:
-                print('Note: {} was empty. Skipping.'.format(currentSolutionFile))
+                print("Note: {} was empty. Skipping.".format(currentSolutionFile))
                 continue
             funcDataFrame = postFunction(
-                caseComb, float(time), surfaceDataFrame, **kwargs)
+                caseComb, float(time), surfaceDataFrame, **kwargs
+            )
 
             counter = 0
             for variables in caseComb:
-                funcDataFrame['var_' + str(counter)] = variables
+                funcDataFrame["var_" + str(counter)] = variables
                 counter += 1
-            outputDf = pd.concat([outputDf,funcDataFrame], axis=0, join='outer')
+            outputDf = pd.concat([outputDf, funcDataFrame], axis=0, join="outer")
             del surfaceDataFrame
 
     return outputDf

@@ -236,23 +236,7 @@ def create_case_data(
     return cases_data
 
 
-def create_study_structure(
-    base_case: Union[str, Path],
-    categories: List[Category],
-    study_data: Union[List[CaseData], List[List[Category_Data]]],
-    writeDir: Union[str, Path] = "Cases",
-    structure: StructureEnum = StructureEnum.tree,
-    cartesian: bool = True,
-) -> None:
-    if type(study_data[0]) != CaseData:
-        study_data = create_case_data(study_data, cartesian)
-    ps = ParameterStudy(
-        base_case=base_case,
-        writeDir=writeDir,
-        structure=structure,
-        categories=categories,
-        study_data=study_data,
-    )
+def _create_study_structure(ps: ParameterStudy) -> None:
     cases = create_cases(ps)
     case_vars = case_variations(cases)
 
@@ -272,3 +256,24 @@ def create_study_structure(
         c.execute()
 
     os.chdir(pwd)
+
+
+def create_study_structure(
+    base_case: Union[str, Path],
+    categories: List[Category],
+    study_data: Union[List[CaseData], List[List[Category_Data]]],
+    writeDir: Union[str, Path] = "Cases",
+    structure: StructureEnum = StructureEnum.tree,
+    cartesian: bool = True,
+) -> None:
+    if type(study_data[0]) != CaseData:
+        study_data = create_case_data(study_data, cartesian)
+
+    ps = ParameterStudy(
+        base_case=base_case,
+        writeDir=writeDir,
+        structure=structure,
+        categories=categories,
+        study_data=study_data,
+    )
+    _create_study_structure(ps)

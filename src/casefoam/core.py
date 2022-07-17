@@ -25,11 +25,12 @@ def _errorCleanUp(baseCase, cases):
 
     # move `baseCase`/baseCase/ content to `baseCase`/
     try:
-        for src in os.listdir(os.path.join(baseCase, 'baseCase')):
-            shutil.move(os.path.join(baseCase, 'baseCase', src),
-                        os.path.join(baseCase, ''))
+        for src in os.listdir(os.path.join(baseCase, "baseCase")):
+            shutil.move(
+                os.path.join(baseCase, "baseCase", src), os.path.join(baseCase, "")
+            )
 
-        os.rmdir(os.path.join(baseCase, 'baseCase'))
+        os.rmdir(os.path.join(baseCase, "baseCase"))
     except FileNotFoundError:
         pass
 
@@ -53,10 +54,10 @@ class CaseFoamManipulator(object):
 
     def __init__(self, baseCase):
         self.baseCase = baseCase
-        if os.path.exists(os.path.join(self.baseCase, 'baseCase')):
-            self.baseCaseDir = os.path.join(self.baseCase, 'baseCase')
+        if os.path.exists(os.path.join(self.baseCase, "baseCase")):
+            self.baseCaseDir = os.path.join(self.baseCase, "baseCase")
 
-    def loadParameter(self, parameterFile, caseDir='baseCase'):
+    def loadParameter(self, parameterFile, caseDir="baseCase"):
         """Load a parameter file.
 
         Load a parameter File and make it a new attribute of the case.
@@ -80,21 +81,21 @@ class CaseFoamManipulator(object):
         >>> case.U
 
         """
-        if 'baseCase' in caseDir:
+        if "baseCase" in caseDir:
             try:
-                _parameterFilePath = os.path.join(self.baseCaseDir,
-                                                  parameterFile)
+                _parameterFilePath = os.path.join(self.baseCaseDir, parameterFile)
             except AttributeError:
-                _parameterFilePath = os.path.join(self.baseCase,
-                                                  parameterFile)
+                _parameterFilePath = os.path.join(self.baseCase, parameterFile)
         else:
             _parameterFilePath = os.path.join(caseDir, parameterFile)
 
         try:
             _parameter = ParsedParameterFile(_parameterFilePath)
         except FileNotFoundError:
-            print('ParameterFile not found: No such OpenFOAM parameter file: '
-                  '\'%s\'' % parameterFile)
+            print(
+                "ParameterFile not found: No such OpenFOAM parameter file: "
+                "'%s'" % parameterFile
+            )
             _errorCleanUp(self.baseCase, self.caseStructure)
 
         return _parameter
@@ -146,6 +147,7 @@ class CaseFoamManipulator(object):
          'internalField': 'uniform (3 0 0)'}
 
         """
+
         def _innerUpdate(_param, _paramUp):
             for key, value in _paramUp.items():
                 if isinstance(value, Mapping):
@@ -154,8 +156,7 @@ class CaseFoamManipulator(object):
                     _param[key] = value
             return _param
 
-        parameter.content = _innerUpdate(getattr(parameter, 'content'),
-                                         parameterUpdate)
+        parameter.content = _innerUpdate(getattr(parameter, "content"), parameterUpdate)
 
     def updateString(self, caseStringFile, replaceMarker, string):
         """Update string in text file.
@@ -173,7 +174,7 @@ class CaseFoamManipulator(object):
         with open(caseStringFile) as _caseStringFile:
             stringFile = _caseStringFile.read()
 
-        with open(caseStringFile, 'w') as _caseStringFile:
+        with open(caseStringFile, "w") as _caseStringFile:
             stringFile = re.sub(replaceMarker, string, stringFile)
             _caseStringFile.write(stringFile)
 
@@ -214,19 +215,20 @@ class CaseFoamStructure(CaseFoamManipulator, ParsedParameterFile):
         directory and move all the content to the `baseCase` directory.
 
         """
-        self.baseCaseDir = os.path.join(self.baseCase, 'baseCase')
+        self.baseCaseDir = os.path.join(self.baseCase, "baseCase")
         try:
             baseFolder = os.listdir(self.baseCase)
         except FileNotFoundError:
-            print('baseCase not found: No such file or directory: '
-                  '\'%s\'' % self.baseCaseDir)
+            print(
+                "baseCase not found: No such file or directory: "
+                "'%s'" % self.baseCaseDir
+            )
             _errorCleanUp(self.baseCase, self.caseStructure)
 
         try:
             os.mkdir(self.baseCaseDir)
             for folder in baseFolder:
-                shutil.move(os.path.join(self.baseCase, folder),
-                            self.baseCaseDir)
+                shutil.move(os.path.join(self.baseCase, folder), self.baseCaseDir)
         except OSError:
             return None
 
@@ -278,7 +280,7 @@ class CaseFoamStructure(CaseFoamManipulator, ParsedParameterFile):
             level -= 1
             self._main()
 
-    def makeStructure(self, hierarchy, case, seperator='_'):
+    def makeStructure(self, hierarchy, case, seperator="_"):
         """Make structure.
 
         Makes case directory in prefered structure.
@@ -293,17 +295,18 @@ class CaseFoamStructure(CaseFoamManipulator, ParsedParameterFile):
             Seperator for flat folder hierarchy.
 
         """
-        if hierarchy is 'flat':
+        if hierarchy is "flat":
             relCaseDir = seperator.join(case)
             self.caseDir = os.path.join(self.baseCase, relCaseDir)
-        elif hierarchy is 'tree':
+        elif hierarchy is "tree":
             relCaseDir = os.sep.join(case)
             self.caseDir = os.path.join(self.baseCase, relCaseDir)
         else:
-            print('Hierarchy error: No such hierarchy option known: %s\n'
-                  '\n'
-                  'Valid arguments for hierarchy are \'tree\' or \'flat\''
-                  % hierarchy)
+            print(
+                "Hierarchy error: No such hierarchy option known: %s\n"
+                "\n"
+                "Valid arguments for hierarchy are 'tree' or 'flat'" % hierarchy
+            )
             _errorCleanUp(self.baseCase, self.caseStructure)
 
         try:
@@ -331,11 +334,11 @@ class CaseFoamStructure(CaseFoamManipulator, ParsedParameterFile):
                     caseDataItem = self.caseData[item]
             except KeyError:
                 print(
-                    'Case not found: No case %s found as key in the caseData'
-                    ' dict\n'
-                    '\n'
-                    'Following caseData keys are given:\n'
-                    '%s' % (item, list(self.caseData.keys()))
+                    "Case not found: No case %s found as key in the caseData"
+                    " dict\n"
+                    "\n"
+                    "Following caseData keys are given:\n"
+                    "%s" % (item, list(self.caseData.keys()))
                 )
                 _errorCleanUp(self.baseCase, self.caseStructure)
 
@@ -346,19 +349,18 @@ class CaseFoamStructure(CaseFoamManipulator, ParsedParameterFile):
                 # NOTE: '#!bash' needs to be checked first. If it is checked
                 #       after '#!stringManipulation' an error is raised because
                 #       'value' has then no keys.
-                if key == '#!bash':
-                    if '#!destination' in value:
-                        value = value.replace('#!destination', self.caseDir)
+                if key == "#!bash":
+                    if "#!destination" in value:
+                        value = value.replace("#!destination", self.caseDir)
                     subprocess.call(value, shell=True)
                 # manipulate a string in file if #!stringManipulation is a key
-                elif '#!stringManipulation' in value.keys():
-                    stringParameters = value['#!stringManipulation'].items()
+                elif "#!stringManipulation" in value.keys():
+                    stringParameters = value["#!stringManipulation"].items()
 
                     # convert dict_items to list
                     for stringParameter in list(stringParameters):
                         replaceMarker, string = stringParameter
-                        self.updateString(parameterFilePath, replaceMarker,
-                                          string)
+                        self.updateString(parameterFilePath, replaceMarker, string)
                 else:
                     parameter = self.loadParameter(key, self.caseDir)
                     self.updateParameter(parameter, value)
