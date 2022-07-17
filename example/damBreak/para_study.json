@@ -1,0 +1,229 @@
+{
+  "base_case": "damBreak",
+  "writeDir": "Cases",
+  "structure": "tree",
+  "categories": [
+    {
+      "name": "height",
+      "instructions": [
+        {
+          "instruction_type": "string",
+          "file_name": "system/setFieldsDict",
+          "entry": "var_height"
+        }
+      ]
+    },
+    {
+      "name": "Res",
+      "instructions": [
+        {
+          "instruction_type": "string",
+          "file_name": "system/blockMeshDict",
+          "entry": "varA"
+        },
+        {
+          "instruction_type": "string",
+          "file_name": "system/blockMeshDict",
+          "entry": "varB"
+        },
+        {
+          "instruction_type": "string",
+          "file_name": "system/blockMeshDict",
+          "entry": "varC"
+        },
+        {
+          "instruction_type": "string",
+          "file_name": "system/blockMeshDict",
+          "entry": "varD"
+        },
+        {
+          "instruction_type": "string",
+          "file_name": "system/blockMeshDict",
+          "entry": "varE"
+        }
+      ]
+    }
+  ],
+  "study_data": [
+    {
+      "case_data": [
+        {
+          "cat_name": "height_02",
+          "values": [
+            "0.2"
+          ]
+        },
+        {
+          "cat_name": "grid1",
+          "values": [
+            "23",
+            "8",
+            "19",
+            "42",
+            "4"
+          ]
+        }
+      ]
+    },
+    {
+      "case_data": [
+        {
+          "cat_name": "height_02",
+          "values": [
+            "0.2"
+          ]
+        },
+        {
+          "cat_name": "grid2",
+          "values": [
+            "46",
+            "16",
+            "38",
+            "84",
+            "8"
+          ]
+        }
+      ]
+    },
+    {
+      "case_data": [
+        {
+          "cat_name": "height_02",
+          "values": [
+            "0.2"
+          ]
+        },
+        {
+          "cat_name": "grid3",
+          "values": [
+            "69",
+            "24",
+            "57",
+            "126",
+            "12"
+          ]
+        }
+      ]
+    },
+    {
+      "case_data": [
+        {
+          "cat_name": "height_03",
+          "values": [
+            "0.3"
+          ]
+        },
+        {
+          "cat_name": "grid1",
+          "values": [
+            "23",
+            "8",
+            "19",
+            "42",
+            "4"
+          ]
+        }
+      ]
+    },
+    {
+      "case_data": [
+        {
+          "cat_name": "height_03",
+          "values": [
+            "0.3"
+          ]
+        },
+        {
+          "cat_name": "grid2",
+          "values": [
+            "46",
+            "16",
+            "38",
+            "84",
+            "8"
+          ]
+        }
+      ]
+    },
+    {
+      "case_data": [
+        {
+          "cat_name": "height_03",
+          "values": [
+            "0.3"
+          ]
+        },
+        {
+          "cat_name": "grid3",
+          "values": [
+            "69",
+            "24",
+            "57",
+            "126",
+            "12"
+          ]
+        }
+      ]
+    },
+    {
+      "case_data": [
+        {
+          "cat_name": "height_04",
+          "values": [
+            "0.4"
+          ]
+        },
+        {
+          "cat_name": "grid1",
+          "values": [
+            "23",
+            "8",
+            "19",
+            "42",
+            "4"
+          ]
+        }
+      ]
+    },
+    {
+      "case_data": [
+        {
+          "cat_name": "height_04",
+          "values": [
+            "0.4"
+          ]
+        },
+        {
+          "cat_name": "grid2",
+          "values": [
+            "46",
+            "16",
+            "38",
+            "84",
+            "8"
+          ]
+        }
+      ]
+    },
+    {
+      "case_data": [
+        {
+          "cat_name": "height_04",
+          "values": [
+            "0.4"
+          ]
+        },
+        {
+          "cat_name": "grid3",
+          "values": [
+            "69",
+            "24",
+            "57",
+            "126",
+            "12"
+          ]
+        }
+      ]
+    }
+  ]
+}
