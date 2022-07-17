@@ -1,18 +1,41 @@
 from typing_extensions import Annotated
-from typing import Literal, Union, List, Any
+from typing import Literal, Union, List, Any, Dict, Tuple, Optional, Callable
 from pathlib import Path
-import shutil
+import shutil, os
+import itertools
+import subprocess
 from enum import Enum
+from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 from pydantic import BaseModel, Field, validator
 
 # instructions
 class OF_Dict(BaseModel):
     instruction_type: Literal["of_dict"] = Field(default="of_dict")
-    file_name: Union[str, Path]
+    file_name: Union[str, Path] = Field(default="system/simulationParameters")
     entry: str
 
-    def execute(self):
-        print(self.instruction_type)
+    def _nested_set(self, dic: Dict, keyword: str, value: Any):
+        key_list = keyword.split("/")
+        key_list[:] = [x for x in key_list if x]
+        if len(key_list) == 1:
+            dic[key_list[-1]] = value
+            return
+        for key in key_list[:-1]:
+            if key not in dic:
+                raise ValueError(
+                    f"""
+                    key not found in dictionary
+                    valid options: {dic.keys()}
+                    given: {key}
+                """
+                )  # Keyerror ignore line breaks
+            dic = dic[key]
+        dic[key_list[-1]] = value
+
+    def execute(self, value: Any):
+        ppp = ParsedParameterFile(self.file_name)
+        self._nested_set(ppp.content, self.entry, value)
+        ppp.writeFile()
 
 
 class String(BaseModel):
@@ -20,15 +43,18 @@ class String(BaseModel):
     file_name: Union[str, Path]
     entry: str
 
-    def execute(self):
-        print(self.instruction_type)
+    def execute(self, value: str):
+        file = Path(self.file_name)
+        f_content = file.read_text()
+        f_content = f_content.replace(self.entry, value)
+        file.write_text(f_content)
 
 
 class Bash_Cmd(BaseModel):
     instruction_type: Literal["bash_cmd"] = Field(default="bash_cmd")
 
-    def execute(self):
-        print(self.instruction_type)
+    def execute(self, value: str):
+        subprocess.call(value, shell=True)
 
 
 Instructions = Annotated[
@@ -41,6 +67,10 @@ class Category(BaseModel):
     name: str
     instructions: List[Instructions]
 
+    def execute(self, values: List[Any]):
+        for i, instruct in enumerate(self.instructions):
+            instruct.execute(values[i])
+
 
 class Category_Data(BaseModel):
     cat_name: str
@@ -49,6 +79,23 @@ class Category_Data(BaseModel):
 
 class CaseData(BaseModel):
     case_data: List[Category_Data]
+
+
+class CaseModifier(BaseModel):
+    categories: List[Category]
+    case_data: CaseData
+
+    def execute(self):
+        for idx, cat_mod in enumerate(self.categories):
+            cat_mod.execute(self.case_data.case_data[idx].values)
+
+
+class OFCases(BaseModel):
+    cases: List[CaseModifier]
+
+    def execute(self):
+        for mod in self.cases:
+            mod.execute()
 
 
 class StructureEnum(str, Enum):
@@ -90,20 +137,7 @@ class ParameterStudy(BaseModel):
         return v
 
 
-class CaseModifier(BaseModel):
-    categories: List[Category]
-    case_data: CaseData
-
-    def execute(self):
-        for cat_mod in self.categories:
-            cat_mod.execute()
-
-
-class OFCases(BaseModel):
-    cases: List[CaseModifier]
-
-
-def create_cases(ps: ParameterStudy) -> List[OFCases]:
+def create_cases(ps: ParameterStudy) -> OFCases:
     cases = []
     cats = ps.categories
     for cs in ps.study_data:
@@ -134,7 +168,91 @@ def case_struct(
     return cs
 
 
-def study_structure(ps: ParameterStudy) -> None:
+def create_category(
+    cat_name: str,
+    instructions: List[Union[Dict[str, Any], Union[OF_Dict, String, Bash_Cmd]]],
+) -> Category:
+
+    if type(instructions[0]) != dict:
+        return Category(name=cat_name, instructions=instructions)
+
+    # add default values for the case that a list of dict is supplied
+    for i in instructions:
+        if "instruction_type" not in i:
+            i["instruction_type"] = "of_dict"
+        if i["instruction_type"] == "of_dict":
+            if "file_name" not in i:
+                i["file_name"] = "system/simulationParameters"
+
+    return Category(name=cat_name, instructions=instructions)
+
+
+Cat_data_func = Callable[
+    [int, Union[Any, List[Any]], Optional[List[str]]], Tuple[str, List[Any]]
+]
+
+
+def cat_data_modfunc(
+    idx: int,
+    data: Union[Any, List[Any]],
+    cat_names: Optional[List[str]] = None,
+    prefix: str = "c_",
+) -> Tuple[str, List[Any]]:
+    if cat_names != None:
+        if type(data) == list:
+            return cat_names[idx], data
+        else:
+            return cat_names[idx], [data]
+    if type(data) == str:
+        return data, [data]
+    elif type(data) == list:
+        return f"{prefix}{idx}", data
+    else:  # assume integer float etc
+        return f"{prefix}{data}", [data]
+
+
+def create_category_data(
+    data: List[Any],
+    cat_names: Optional[List[str]] = None,
+    modifier: Cat_data_func = cat_data_modfunc,
+    **kwargs,
+) -> List[Category_Data]:
+    cat_data = []
+    for idx, d in enumerate(data):
+        cat_name, values = cat_data_modfunc(idx, d, cat_names, **kwargs)
+        cat_data.append(Category_Data(cat_name=cat_name, values=values))
+    return cat_data
+
+
+def create_case_data(
+    study_data: List[List[Category_Data]], cartesian: bool = True
+) -> List[CaseData]:
+    if not cartesian:
+        cases_data = [CaseData(case_data=c) for c in case_variations]
+        return cases_data
+
+    case_variations = list(itertools.product(*study_data))
+    cases_data = [CaseData(case_data=c) for c in case_variations]
+    return cases_data
+
+
+def create_study_structure(
+    base_case: Union[str, Path],
+    categories: List[Category],
+    study_data: Union[List[CaseData], List[List[Category_Data]]],
+    writeDir: Union[str, Path] = "Cases",
+    structure: StructureEnum = StructureEnum.tree,
+    cartesian: bool = True,
+) -> None:
+    if type(study_data[0]) != CaseData:
+        study_data = create_case_data(study_data, cartesian)
+    ps = ParameterStudy(
+        base_case=base_case,
+        writeDir=writeDir,
+        structure=structure,
+        categories=categories,
+        study_data=study_data,
+    )
     cases = create_cases(ps)
     case_vars = case_variations(cases)
 
@@ -147,3 +265,10 @@ def study_structure(ps: ParameterStudy) -> None:
         shutil.copytree(ps.base_case, d)
         with open(Path(d, "case.json"), "w") as f:
             f.write(c.json(indent=2))
+
+    pwd = os.getcwd()
+    for c, d in zip(cases.cases, dir_cases):
+        os.chdir(Path(pwd, d))
+        c.execute()
+
+    os.chdir(pwd)

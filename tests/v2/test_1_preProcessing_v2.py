@@ -1,10 +1,20 @@
 # pytest has to be run from project root directory!
+from sys import prefix
 from unittest import case
 import casefoam
 import os
-from casefoam.genCases import Category, OF_Dict, String, Category_Data, ParameterStudy, CaseData, study_structure
+from casefoam.genCases import (
+    Category,
+    OF_Dict,
+    String,
+    Category_Data,
+    create_category,
+    create_category_data,
+    create_study_structure
+)
 from casefoam.utility import of_cases
 import itertools
+
 # generate testPostProcessing cases
 def test_buildCase():
     # directory of the base case
@@ -16,30 +26,27 @@ def test_buildCase():
         name="var_0",
         instructions=[OF_Dict(file_name="0/U", entry="boundary/inlet/value")],
     )
-    c2 = Category(
-        name="var_1",
+    c2 = create_category(
+        cat_name="var_1",
         instructions=[OF_Dict(file_name="0/T", entry="boundary/inlet/value")],
+    )  # positional arguments also work
+    c3 = create_category(
+        cat_name="var_2",
+        instructions=[{"file_name": "0/p", "entry": "boundary/inlet/value"}],
     )
-    c3 = Category(
-        name="var_2",
-        instructions=[OF_Dict(file_name="0/p", entry="boundary/inlet/value")],
-    )
-    c4 = Category(
-        name="var_3",
-        instructions=[String(file_name='system/stringTest.txt', entry="STRINGMARKER")],
+    c4 = create_category(
+        cat_name="var_3",
+        instructions=[String(file_name="system/stringTest.txt", entry="STRINGMARKER")],
     )
 
-    U = [Category_Data(cat_name=f"Ux{i}",values=[i]) for i in [1,3]]
-    T = [Category_Data(cat_name=f"T{i}",values=[i]) for i in [1]]
-    p = [Category_Data(cat_name=f"p{i}",values=[i]) for i in [1]]
-    string = [Category_Data(cat_name=f"string{i}",values=[i]) for i in [10]]
+    U = create_category_data(data=[1, 3], prefix="Ux")  # list of change parameters
+    T = create_category_data(data=[1], cat_names=["T1"])
+    p = [Category_Data(cat_name=f"p{i}", values=[i]) for i in [1]]  #
+    string = create_category_data(data=[10], cat_names=["string10"])
 
-    cases_data = list(itertools.product(U,T,p,string))
-    cases_data = [CaseData(case_data=[i,j,k,l]) for i,j,k,l in cases_data]# print()a=case_data())
-
-    p1 = ParameterStudy(base_case="testCase",categories=[c1,c2,c3,c4],study_data=cases_data)
-
-    study_structure(p1)
+    create_study_structure(
+        base_case="testCase", categories=[c1, c2, c3, c4], study_data=[U, T, p, string]
+    )
 
     os.chdir(cwd)
 
