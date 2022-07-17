@@ -24,15 +24,15 @@ def test_buildCase():
 
     c1 = Category(
         name="var_0",
-        instructions=[OF_Dict(file_name="0/U", entry="boundary/inlet/value")],
+        instructions=[OF_Dict(file_name="0/U", entry="boundaryField/inlet/value")],
     )
     c2 = create_category(
         cat_name="var_1",
-        instructions=[OF_Dict(file_name="0/T", entry="boundary/inlet/value")],
+        instructions=[OF_Dict(file_name="0/T", entry="boundaryField/inlet/value")],
     )  # positional arguments also work
     c3 = create_category(
         cat_name="var_2",
-        instructions=[{"file_name": "0/p", "entry": "boundary/inlet/value"}],
+        instructions=[{"file_name": "0/p", "entry": "boundaryField/inlet/value"}],
     )
     c4 = create_category(
         cat_name="var_3",
@@ -42,7 +42,7 @@ def test_buildCase():
     U = create_category_data(data=[1, 3], prefix="Ux")  # list of change parameters
     T = create_category_data(data=[1], cat_names=["T1"])
     p = [Category_Data(cat_name=f"p{i}", values=[i]) for i in [1]]  #
-    string = create_category_data(data=[10], cat_names=["string10"])
+    string = create_category_data(data=["10"], cat_names=["string10"])
 
     create_study_structure(
         base_case="testCase", categories=[c1, c2, c3, c4], study_data=[U, T, p, string]

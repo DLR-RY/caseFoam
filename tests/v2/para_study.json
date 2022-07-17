@@ -9,7 +9,7 @@
         {
           "instruction_type": "of_dict",
           "file_name": "0/U",
-          "entry": "boundary/inlet/value"
+          "entry": "boundaryField/inlet/value"
         }
       ]
     },
@@ -19,7 +19,7 @@
         {
           "instruction_type": "of_dict",
           "file_name": "0/T",
-          "entry": "boundary/inlet/value"
+          "entry": "boundaryField/inlet/value"
         }
       ]
     },
@@ -29,7 +29,7 @@
         {
           "instruction_type": "of_dict",
           "file_name": "0/p",
-          "entry": "boundary/inlet/value"
+          "entry": "boundaryField/inlet/value"
         }
       ]
     },
@@ -68,7 +68,7 @@
         {
           "cat_name": "string10",
           "values": [
-            10
+            "10"
           ]
         }
       ]
@@ -96,7 +96,7 @@
         {
           "cat_name": "string10",
           "values": [
-            10
+            "10"
           ]
         }
       ]
