@@ -67,7 +67,13 @@ setup(
     },
     keywords=["cfd", "openfoam", "postProcessing", "automation"],
     python_requires=">=3.6",
-    install_requires=["pyfoam>=0.6.7", "pandas>=0.23.0"],
+    install_requires=[
+        "pyfoam>=0.6.7",
+        "pandas>=0.23.0",
+        "pydantic>=1.7.0",
+        "typer>=0.6.0",
+        "rich>=12.0.0",
+    ],
     extras_require={
         "dev": ["pytest>=6.2.3", "sphinx_rtd_theme", "numpydoc", "sphinx", "ipython"],
         "plot": ["seaborn>=0.8"],
