@@ -266,6 +266,27 @@ def create_study_structure(
     structure: StructureEnum = StructureEnum.tree,
     cartesian: bool = True,
 ) -> None:
+    """creates the case structure for the parameter study
+
+
+    Parameters
+    ----------
+        base_case (Union[str, Path]):
+            Directory of the base case that is modified to create the parameter study
+        categories (List[Category]):
+            category with instructions
+        study_data (Union[List[CaseData], List[List[Category_Data]]]):
+             data of the category
+        writeDir (Union[str, Path], optional):
+            Directory where created cases are stored. 
+        structure ({'flat', 'tree'}, optional):
+            Hierarchy in which the case directory will be created.
+
+            * 'flat': Creates the structure `parent_child_grandchild`.
+            * 'tree': Creates the structure `parent/child/grandchild`. Defaults to "Cases".
+        cartesian (bool, optional) Defaults to True. :
+            cartesian product of all categories. Defaults to True.
+    """
     if type(study_data[0]) != CaseData:
         study_data = create_case_data(study_data, cartesian)
 

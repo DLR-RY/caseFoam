@@ -9,6 +9,7 @@ casefoam
    :toctree: generated/
 
    CaseFoamManipulator
+   genCases.create_study_structure
    mkCases
    utility.mkRmCases
    utility.mkAllRunClean

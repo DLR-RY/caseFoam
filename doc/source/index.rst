@@ -11,6 +11,7 @@
 
    getting_started.rst
    usage.rst
+   casefoam_cli.rst
    example.rst
 
 API documentation
