@@ -1,4 +1,5 @@
 import os
+from typing import List
 import pandas as pd
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 
@@ -59,85 +60,89 @@ def getCases(solutionDir, caseStructure, baseCase, postDir="postProcessing"):
     return cases.copy(), caseCombs.copy()
 
 
-def __get_timeSeries(solutionFile, columnNames=None):
-    """Load timeSeries data.
+def get_header(file):
+    with open(file, "r") as f:
+        lines = [f.readline().strip() for i in range(20)]
 
-    Load a timeSeries
+    last_comment = max(loc for loc, val in enumerate(lines) if "#" in val)
 
-    Parameters
-    ----------
-    solutionFile : str
-        Path to the solution file.
-    columnNames : list, optional
-        List of forces.
+    columns = lines[last_comment]
+    for remove_char in "()#":
+        columns = columns.replace(remove_char, "")
 
-    Returns
-    -------
-    pandas.DataFrame
-        If a list of columnNames is given, the output will have the
-        ``columnNames`` as columns. If no columnNames are given the
-        columns will be ``[1, 2, ..., n]``.
-
-    """
-    _outputDf = pd.read_csv(
-        solutionFile, comment="#", sep="[() \t]+", engine="python", header=None
-    )
-    # drop last column as it terminates with
-    if pd.isnull(_outputDf.iloc[0, -1]):
-        _outputDf.drop(
-            _outputDf.columns[
-                [
-                    -1,
-                ]
-            ],
-            axis=1,
-            inplace=True,
-        )
-
-    _outputDf.set_index(0, inplace=True)
-    if columnNames is not None:
-        _outputDf.columns = columnNames
-
-    return _outputDf
+    return columns.split()
 
 
-def __get_posField(solutionFile):
-    """Load pos data.
-
-    Load a posSeries
-
-    Parameters
-    ----------
-    solutionFile : str
-        Path to the solution file
-
-    Returns
-    -------
-    pandas.DataFrame
-
-    """
-
-    try:
-        suffix = os.path.splitext(solutionFile)[1]
-        if suffix in (".xy", ".raw"):
-            return pd.read_csv(
-                solutionFile, comment="#", delim_whitespace=True, header=None
-            )
-        elif suffix == ".csv":
-            return pd.read_csv(solutionFile)
-        else:
-            raise Exception(
-                "File Format : ",
-                suffix,
-                " is not supported only xy ",
-                "raw csv. Please change the setFormat or",
-                "surfaceFormat in the ``controlDict`` to ``csv`` or ``raw``",
-            )
-    except FileNotFoundError:
+def load_df(
+    solutionFile,
+    case_parameters,
+    time: float = None,
+    apply_func=None,
+    category_names: List[str] = None,
+    columnNames=None,
+    header_from_file=False,
+):
+    if not os.path.exists(solutionFile):
         return None
 
+    # check if file has braces
+    with open(solutionFile, "r") as f:
+        lines = [f.readline().strip() for i in range(20)]
 
-def time_series(solutionDir, file, caseStructure=None, baseCase=".", columnNames=None):
+    has_brace = "(" in "".join(lines)
+
+    # load df
+    suffix = os.path.splitext(solutionFile)[1]
+    try:
+        if suffix == ".csv":
+            df = pd.read_csv(solutionFile)
+        elif has_brace:
+            df = pd.read_csv(
+                solutionFile, comment="#", sep="[() \t]+", engine="python", header=None
+            )
+
+            if pd.isnull(df.iloc[0, -1]):
+                last_col_name = df.columns[-1]
+                df = df.drop(last_col_name, axis=1)
+        else:
+            df = pd.read_csv(
+                solutionFile, comment="#", delim_whitespace=True, header=None
+            )
+    except pd.errors.EmptyDataError:
+        print(f"Note: {solutionFile} was empty. Skipping.")
+        return None
+    if apply_func is not None:
+        if time is None:
+            raise ValueError("time needs to be passed if the apply function is passed")
+        df = apply_func(case_parameters, time, df)
+
+    # set column names
+    if columnNames:
+        df.columns = columnNames
+    elif header_from_file:
+        header = get_header(solutionFile)
+        if len(header) == len(df.columns):
+            df.columns = get_header(solutionFile)
+
+    # set categories
+    for i, variables in enumerate(case_parameters):
+        cat_name = "var_" + str(i)
+        if category_names:
+            cat_name = category_names[i]
+        df[cat_name] = variables
+
+    return df
+
+
+def time_series(
+    solutionDir,
+    file,
+    caseStructure=None,
+    baseCase=".",
+    columnNames=None,
+    set_index=True,
+    header_from_file=False,
+):
     """Load timeSeries(e.g probes, forces etc)
 
     Loads a timeseries of a given case and save them into one pandas.DataFrame.
@@ -169,28 +174,33 @@ def time_series(solutionDir, file, caseStructure=None, baseCase=".", columnNames
     outputDf = pd.DataFrame()
     cases, caseCombs = getCases(solutionDir, caseStructure, baseCase)
 
+    dfs = []
     for i, caseComb in enumerate(caseCombs):
         currentSolutionFile = os.path.join(cases[i], file)
-        if os.path.exists(currentSolutionFile):
-            try:
-                currentDataFrame = __get_timeSeries(currentSolutionFile, columnNames)
-            except pd.errors.EmptyDataError:
-                print("Note: {} was empty. Skipping.".format(currentSolutionFile))
-                continue
-
-            counter = 0
-            for variables in caseComb:
-                currentDataFrame["var_" + str(counter)] = variables
-                counter += 1
-
-            currentDataFrame.index.name = "t"
-            outputDf = pd.concat([outputDf, currentDataFrame], axis=0, join="outer")
-            del currentDataFrame
+        currentDataFrame = load_df(
+            currentSolutionFile, caseComb, header_from_file=header_from_file
+        )
+        if currentDataFrame is not None:
+            if set_index:
+                currentDataFrame = currentDataFrame.set_index(
+                    currentDataFrame.columns[0]
+                )
+                currentDataFrame.index.name = "t"
+            dfs.append(currentDataFrame)
+    outputDf = pd.concat(dfs, axis=0)
 
     return outputDf
 
 
-def positional_field(solutionDir, file, time, caseStructure=None, baseCase="."):
+def positional_field(
+    solutionDir,
+    file,
+    time,
+    caseStructure=None,
+    baseCase=".",
+    columnNames=None,
+    header_from_file=False,
+):
     """Load positionalField(surfaces and sets).
 
     Loads a positionalField of a given case and save them into one
@@ -223,21 +233,15 @@ def positional_field(solutionDir, file, time, caseStructure=None, baseCase="."):
     outputDf = pd.DataFrame()
     cases, caseCombs = getCases(solutionDir, caseStructure, baseCase)
 
+    dfs = []
     for i, caseComb in enumerate(caseCombs):
         currentSolutionFile = os.path.join(cases[i], str(time), file)
-        if os.path.exists(currentSolutionFile):
-            try:
-                currentDataFrame = __get_posField(currentSolutionFile)
-            except pd.errors.EmptyDataError:
-                print("Note: {} was empty. Skipping.".format(currentSolutionFile))
-                continue
-            counter = 0
-            for variables in caseComb:
-                currentDataFrame["var_" + str(counter)] = variables
-                counter += 1
-
-            outputDf = pd.concat([outputDf, currentDataFrame], axis=0, join="outer")
-            del currentDataFrame
+        currentDataFrame = load_df(
+            currentSolutionFile, caseComb, header_from_file=header_from_file
+        )
+        if currentDataFrame is not None:
+            dfs.append(currentDataFrame)
+    outputDf = pd.concat(dfs, axis=0)
 
     return outputDf
 
@@ -277,6 +281,7 @@ def profiling(
     outputDf = pd.DataFrame()
     cases, caseCombs = getCases("", caseStructure, baseCase, postDir=processorDir)
 
+    dfs = []
     for i, caseComb in enumerate(caseCombs):
         currentSolutionFile = os.path.join(cases[i], str(time), "uniform", file)
         if os.path.exists(currentSolutionFile):
@@ -292,14 +297,20 @@ def profiling(
                 currentDataFrame["var_" + str(counter)] = variables
                 counter += 1
 
-            outputDf = pd.concat([outputDf, currentDataFrame], axis=0, join="outer")
-            del currentDataFrame
+            dfs.append(currentDataFrame)
+    outputDf = pd.concat(dfs, axis=0)
 
     return outputDf
 
 
 def posField_to_timeSeries(
-    solutionDir, file, postFunction, caseStructure=None, baseCase=".", **kwargs
+    solutionDir,
+    file,
+    postFunction,
+    caseStructure=None,
+    baseCase=".",
+    header_from_file=False,
+    **kwargs,
 ):
     """Converts multiple posionalFields to timeSeries with a function
 
@@ -353,25 +364,22 @@ def posField_to_timeSeries(
     outputDf = pd.DataFrame()
     cases, caseCombs = getCases(solutionDir, caseStructure, baseCase)
 
+    dfs = []
     for i, caseComb in enumerate(caseCombs):
         times = os.listdir(cases[i])
 
         for time in times:
             currentSolutionFile = os.path.join(cases[i], time, file)
-            try:
-                surfaceDataFrame = __get_posField(currentSolutionFile)
-            except pd.errors.EmptyDataError:
-                print("Note: {} was empty. Skipping.".format(currentSolutionFile))
-                continue
-            funcDataFrame = postFunction(
-                caseComb, float(time), surfaceDataFrame, **kwargs
+            surfaceDataFrame = load_df(
+                currentSolutionFile,
+                caseComb,
+                time=float(time),
+                apply_func=postFunction,
+                header_from_file=header_from_file,
+                **kwargs,
             )
 
-            counter = 0
-            for variables in caseComb:
-                funcDataFrame["var_" + str(counter)] = variables
-                counter += 1
-            outputDf = pd.concat([outputDf, funcDataFrame], axis=0, join="outer")
-            del surfaceDataFrame
+            dfs.append(surfaceDataFrame)
+    outputDf = pd.concat(dfs, axis=0)
 
     return outputDf

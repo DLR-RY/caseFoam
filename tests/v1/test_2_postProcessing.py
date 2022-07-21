@@ -4,6 +4,9 @@ from casefoam.postFunctions import getFreeSurfaceWallAndCentre
 import os
 from subprocess import Popen,PIPE
 
+def list_equal(res,expected) -> bool:
+    values = [a == b for a, b in zip(res, expected)]
+    return all(values)
 
 def test_time_series():
     
@@ -59,6 +62,12 @@ def test_forces():
     assert F[7].max() == 3
     assert F[7].max() == 3
 
+    assert list_equal(F["var_0"].unique(),['Ux1', 'Ux3'])
+    assert list_equal(F["var_1"].unique(),['T1'])
+    assert list_equal(F["var_2"].unique(),['p1'])
+    assert list_equal(F["var_3"].unique(),['string10'])
+
+
     os.chdir(cwd)
 
 
@@ -79,6 +88,10 @@ def test_freeSurface():
     surf = casefoam.positional_field(solutionDir, file, 0, caseStructure,baseCase)
 
     assert surf[3].max() == 0
+    assert list_equal(surf["var_0"].unique(),['Ux1', 'Ux3'])
+    assert list_equal(surf["var_1"].unique(),['T1'])
+    assert list_equal(surf["var_2"].unique(),['p1'])
+    assert list_equal(surf["var_3"].unique(),['string10'])
 
     os.chdir(cwd)
 
@@ -103,6 +116,10 @@ def test_sample_timeSeries():
     assert len(grouped_df.size()) == 2
     assert surf_time['min'].max() == 0
     assert surf_time['max'].max() == 1
+    assert list_equal(surf_time["var_0"].unique(),['Ux1', 'Ux3'])
+    assert list_equal(surf_time["var_1"].unique(),['T1'])
+    assert list_equal(surf_time["var_2"].unique(),['p1'])
+    assert list_equal(surf_time["var_3"].unique(),['string10'])
 
     os.chdir(cwd)
 
@@ -125,6 +142,10 @@ def test_sample_profiling():
     prof = prof[mask]
 
     assert len(prof) == 2
+    assert list_equal(prof["var_0"].unique(),['Ux1', 'Ux3'])
+    assert list_equal(prof["var_1"].unique(),['T1'])
+    assert list_equal(prof["var_2"].unique(),['p1'])
+    assert list_equal(prof["var_3"].unique(),['string10'])
 
     os.chdir(cwd)
 
