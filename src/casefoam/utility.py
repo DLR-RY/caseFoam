@@ -5,7 +5,8 @@ A set of utilities to use with CaseFOAM.
 """
 import os
 import PyFoam.RunDictionary.ParsedParameterFile as PPF
-from typing import List
+from pathlib import Path
+from typing import List,Dict
 
 
 def mkRmCases(baseCase, cases, isWriteDir=False):
@@ -172,3 +173,36 @@ def of_cases(dir_name: str) -> List[str]:
                 cases.append(path)
             dirnames[:] = []
     return cases
+
+
+def is_float(s: str) -> bool:
+    try:
+        float(s)
+    except ValueError:
+        return False
+    return True
+
+
+def list_functionObjects(Cases: str = "Cases") -> Dict[str, List[str]]:
+    function_objs = dict()
+    for case in of_cases(Cases):
+
+        p_post = Path(case, "postProcessing")
+        n_folders = len(p_post.parts)
+
+        # find all function objects in the postProcessing folder
+        # the name of the function objects is level1--level2--level3 ...
+        # levels are no longer appended when the time is specified
+        for root, dirs, _ in os.walk(p_post):
+            if len(dirs) >= 1:
+                if is_float(dirs[0]):
+                    dirs[:] = []
+                    function_obj = "--".join(Path(root).parts[n_folders:])
+
+                    # find all files
+                    files = set()
+                    for _, _, f in os.walk(root):
+                        files.update(f)
+
+                    function_objs[function_obj] = list(files)
+    return function_objs
