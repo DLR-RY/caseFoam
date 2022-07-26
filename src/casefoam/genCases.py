@@ -10,9 +10,9 @@ from pydantic import BaseModel, Field, validator
 
 # instructions
 class OF_Dict(BaseModel):
-    instruction_type: Literal["of_dict"] = Field(default="of_dict")
     file_name: Union[str, Path] = Field(default="system/simulationParameters")
     entry: str
+    instruction_type: Literal["of_dict"] = Field(default="of_dict")
 
     def _nested_set(self, dic: Dict, keyword: str, value: Any):
         key_list = keyword.split("/")
@@ -39,9 +39,9 @@ class OF_Dict(BaseModel):
 
 
 class String(BaseModel):
-    instruction_type: Literal["string"] = Field(default="string")
     file_name: Union[str, Path]
     entry: str
+    instruction_type: Literal["string"] = Field(default="string")
 
     def execute(self, value: str):
         file = Path(self.file_name)
@@ -112,6 +112,7 @@ class ParameterStudy(BaseModel):
 
     @validator("study_data")
     def verify_data(cls, v, values, **kwargs):
+        print(values)
         nCategories = len(values["categories"])
         nValues_in_categories = [len(val.instructions) for val in values["categories"]]
         if not all([len(d.case_data) == nCategories for d in v]):
@@ -278,7 +279,7 @@ def create_study_structure(
         study_data (Union[List[CaseData], List[List[Category_Data]]]):
              data of the category
         writeDir (Union[str, Path], optional):
-            Directory where created cases are stored. 
+            Directory where created cases are stored.
         structure ({'flat', 'tree'}, optional):
             Hierarchy in which the case directory will be created.
 
@@ -298,3 +299,71 @@ def create_study_structure(
         study_data=study_data,
     )
     _create_study_structure(ps)
+
+
+class Parameter:
+    def __init__(
+        self, cat_name, instructions: Category = None, data: List[Category_Data] = None
+    ):
+        self.cat_name = cat_name
+        self.instructions: Category = instructions
+        self.data: List[Category_Data] = data
+
+    def set_modifiers(
+        self,
+        instructions: List[Union[Dict[str, Any], Union[OF_Dict, String, Bash_Cmd]]],
+    ) -> "Parameter":
+        self.instructions = create_category(self.cat_name,instructions)
+        return self
+
+    def set_data(
+        self,
+        values: List[Any],
+        cat_names: Optional[List[str]] = None,
+        modifier: Cat_data_func = cat_data_modfunc,
+        data: List[Category_Data] = None,
+        **kwargs,
+    ) -> "Parameter":
+        if data is None:
+            self.data = create_category_data(values, cat_names, modifier, **kwargs)
+        else:
+            self.data = data
+        return self
+
+
+class ParaStudy:
+    def __init__(self, base_case):
+        self.base_case = base_case
+        self._parameters: List[Parameter] = None
+
+    def add_parameter(
+        self,
+        cat_name: str,
+        instructions: List[
+            Union[Dict[str, Any], Union[OF_Dict, String, Bash_Cmd]]
+        ] = None,
+        data: List[Category_Data] = None,
+    ) -> "Parameter":
+        if self._parameters is None:
+            self._parameters = []
+        p = Parameter(cat_name, instructions=instructions, data=data)
+
+        self._parameters.append(p)
+
+        return self._parameters[-1]
+
+    def parameter(self, cat_name: str) -> "Parameter":
+        for p in self._parameters:
+            if p.cat_name == cat_name:
+                return p
+        raise KeyError("parameter not found")
+
+    def create_study(self) -> None:
+        # validate
+        print([i.instructions for i in self._parameters])
+        print([i.data for i in self._parameters])
+        create_study_structure(
+            base_case=self.base_case,
+            categories=[i.instructions for i in self._parameters],
+            study_data=[i.data for i in self._parameters],
+        )

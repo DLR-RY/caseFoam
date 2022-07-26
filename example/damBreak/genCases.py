@@ -4,31 +4,6 @@ baseCase = 'damBreak'
 caseStructure = [['height_02', 'height_03', 'height_04'],
                  ['grid1', 'grid2', 'grid3']]
 
-# update_grid1 = {
-#    'system/blockMeshDict': {'#!stringManipulation': {'varA': '23',
-#                                                      'varB': '8',
-#                                                      'varC': '19',
-#                                                      'varD': '42',
-#                                                      'varE': '4'}},
-# }
-
-# update_grid2 = {
-#    'system/blockMeshDict': {'#!stringManipulation': {'varA': '46',
-#                                                      'varB': '16',
-#                                                      'varC': '38',
-#                                                      'varD': '84',
-#                                                      'varE': '8'}},
-# }
-
-# update_grid3 = {
-#    'system/blockMeshDict': {'#!stringManipulation': {'varA': '69',
-#                                                      'varB': '24',
-#                                                      'varC': '57',
-#                                                      'varD': '126',
-#                                                      'varE': '12'}},
-# }
-
-
 def update_grid(a, b, c, d, e):
     return {
         'system/blockMeshDict': {'#!stringManipulation': {'varA': '%s' % a,
