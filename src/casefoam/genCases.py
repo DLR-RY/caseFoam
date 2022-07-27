@@ -8,7 +8,7 @@ from enum import Enum
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
 from pydantic import BaseModel, Field, validator
 
-# instructions
+# Modifiers
 class OF_Dict(BaseModel):
     file_name: Union[str, Path] = Field(default="system/simulationParameters")
     entry: str
@@ -57,36 +57,36 @@ class Bash_Cmd(BaseModel):
         subprocess.call(value, shell=True)
 
 
-Instructions = Annotated[
+Modifiers = Annotated[
     Union[OF_Dict, String, Bash_Cmd],
     Field(discriminator="instruction_type"),
 ]
 
 
-class Category(BaseModel):
+class Parameter(BaseModel):
     name: str
-    instructions: List[Instructions]
+    modifiers: List[Modifiers]
 
     def execute(self, values: List[Any]):
-        for i, instruct in enumerate(self.instructions):
+        for i, instruct in enumerate(self.modifiers):
             instruct.execute(values[i])
 
 
-class Category_Data(BaseModel):
-    cat_name: str
+class Parameter_Inputs(BaseModel):
+    input_name: str
     values: List[Any]
 
 
-class CaseData(BaseModel):
-    case_data: List[Category_Data]
+class Case_Inputs(BaseModel):
+    case_data: List[Parameter_Inputs]
 
 
 class CaseModifier(BaseModel):
-    categories: List[Category]
-    case_data: CaseData
+    parameters: List[Parameter]
+    case_data: Case_Inputs
 
     def execute(self):
-        for idx, cat_mod in enumerate(self.categories):
+        for idx, cat_mod in enumerate(self.parameters):
             cat_mod.execute(self.case_data.case_data[idx].values)
 
 
@@ -107,30 +107,29 @@ class ParameterStudy(BaseModel):
     base_case: Union[str, Path]
     writeDir: Union[str, Path] = Field(default="Cases")
     structure: StructureEnum = StructureEnum.tree
-    categories: List[Category]
-    study_data: List[CaseData]
+    parameters: List[Parameter]
+    para_inputs: List[Case_Inputs]
 
-    @validator("study_data")
+    @validator("para_inputs")
     def verify_data(cls, v, values, **kwargs):
-        print(values)
-        nCategories = len(values["categories"])
-        nValues_in_categories = [len(val.instructions) for val in values["categories"]]
-        if not all([len(d.case_data) == nCategories for d in v]):
-            nCase_data = [len(d.case_data) for d in v]
+        nParameters = len(values["parameters"])
+        nInputs_in_parameters = [len(val.modifiers) for val in values["parameters"]]
+        if not all([len(d.case_data) == nParameters for d in v]):
+            nInput_data = [len(d.case_data) for d in v]
             raise ValueError(
                 f"""
-                    number of provided categories: {nCategories}
-                    number of data in a categories: min: {min(nCase_data)} max: {min(nCase_data)}
+                    number of provided categories: {nParameters}
+                    number of provided inputs: min: {min(nInput_data)} max: {min(nInput_data)}
                     They have to match!
                  """
             )
         for d in v:
             nValues = [len(val.values) for val in d.case_data]
-            if nValues != nValues_in_categories:
+            if nValues != nInputs_in_parameters:
                 raise ValueError(
                     f"""
-                        number of instructions: {nValues_in_categories}
-                        number of data: {nValues}
+                        number of modifies: {nInputs_in_parameters}
+                        number of inputs: {nValues}
                         They have to match!
                     """
                 )
@@ -140,20 +139,20 @@ class ParameterStudy(BaseModel):
 
 def create_cases(ps: ParameterStudy) -> OFCases:
     cases = []
-    cats = ps.categories
-    for cs in ps.study_data:
-        cases.append(CaseModifier(categories=cats, case_data=cs))
+    cats = ps.parameters
+    for cs in ps.para_inputs:
+        cases.append(CaseModifier(parameters=cats, case_data=cs))
     return OFCases(cases=cases)
 
 
 def get_cat_names(ps: ParameterStudy) -> List[str]:
-    return [c.name for c in ps.categories]
+    return [c.name for c in ps.parameters]
 
 
 def case_variations(cases: OFCases) -> List[List[str]]:
     vars = []
     for c in cases.cases:
-        vars.append([d.cat_name for d in c.case_data.case_data])
+        vars.append([d.input_name for d in c.case_data.case_data])
     return vars
 
 
@@ -169,41 +168,41 @@ def case_struct(
     return cs
 
 
-def create_category(
-    cat_name: str,
-    instructions: List[Union[Dict[str, Any], Union[OF_Dict, String, Bash_Cmd]]],
-) -> Category:
+def create_parameter(
+    para_name: str,
+    modify: List[Union[Dict[str, Any], Union[OF_Dict, String, Bash_Cmd]]],
+) -> Parameter:
 
-    if type(instructions[0]) != dict:
-        return Category(name=cat_name, instructions=instructions)
+    if type(modify[0]) != dict:
+        return Parameter(name=para_name, modifiers=modify)
 
     # add default values for the case that a list of dict is supplied
-    for i in instructions:
+    for i in modify:
         if "instruction_type" not in i:
             i["instruction_type"] = "of_dict"
         if i["instruction_type"] == "of_dict":
             if "file_name" not in i:
                 i["file_name"] = "system/simulationParameters"
 
-    return Category(name=cat_name, instructions=instructions)
+    return Parameter(name=para_name, modifiers=modify)
 
 
-Cat_data_func = Callable[
+Para_input_func = Callable[
     [int, Union[Any, List[Any]], Optional[List[str]]], Tuple[str, List[Any]]
 ]
 
 
-def cat_data_modfunc(
+def para_input_modfunc(
     idx: int,
     data: Union[Any, List[Any]],
-    cat_names: Optional[List[str]] = None,
+    input_names: Optional[List[str]] = None,
     prefix: str = "c_",
 ) -> Tuple[str, List[Any]]:
-    if cat_names != None:
+    if input_names != None:
         if type(data) == list:
-            return cat_names[idx], data
+            return input_names[idx], data
         else:
-            return cat_names[idx], [data]
+            return input_names[idx], [data]
     if type(data) == str:
         return data, [data]
     elif type(data) == list:
@@ -212,28 +211,28 @@ def cat_data_modfunc(
         return f"{prefix}{data}", [data]
 
 
-def create_category_data(
+def create_parameter_input(
     data: List[Any],
-    cat_names: Optional[List[str]] = None,
-    modifier: Cat_data_func = cat_data_modfunc,
+    input_names: Optional[List[str]] = None,
+    modifier: Para_input_func = para_input_modfunc,
     **kwargs,
-) -> List[Category_Data]:
+) -> List[Parameter_Inputs]:
     cat_data = []
     for idx, d in enumerate(data):
-        cat_name, values = cat_data_modfunc(idx, d, cat_names, **kwargs)
-        cat_data.append(Category_Data(cat_name=cat_name, values=values))
+        input_name, values = para_input_modfunc(idx, d, input_names, **kwargs)
+        cat_data.append(Parameter_Inputs(input_name=input_name, values=values))
     return cat_data
 
 
-def create_case_data(
-    study_data: List[List[Category_Data]], cartesian: bool = True
-) -> List[CaseData]:
+def create_case_inputs(
+    study_data: List[List[Parameter_Inputs]], cartesian: bool = True
+) -> List[Case_Inputs]:
     if not cartesian:
-        cases_data = [CaseData(case_data=c) for c in case_variations]
+        cases_data = [Case_Inputs(case_data=c) for c in case_variations]
         return cases_data
 
     case_variations = list(itertools.product(*study_data))
-    cases_data = [CaseData(case_data=c) for c in case_variations]
+    cases_data = [Case_Inputs(case_data=c) for c in case_variations]
     return cases_data
 
 
@@ -261,8 +260,8 @@ def _create_study_structure(ps: ParameterStudy) -> None:
 
 def create_study_structure(
     base_case: Union[str, Path],
-    categories: List[Category],
-    study_data: Union[List[CaseData], List[List[Category_Data]]],
+    parameters: List[Parameter],
+    case_inputs: Union[List[Case_Inputs], List[List[Parameter_Inputs]]],
     writeDir: Union[str, Path] = "Cases",
     structure: StructureEnum = StructureEnum.tree,
     cartesian: bool = True,
@@ -288,82 +287,75 @@ def create_study_structure(
         cartesian (bool, optional) Defaults to True. :
             cartesian product of all categories. Defaults to True.
     """
-    if type(study_data[0]) != CaseData:
-        study_data = create_case_data(study_data, cartesian)
+    if type(case_inputs[0]) != Case_Inputs:
+        case_inputs = create_case_inputs(case_inputs, cartesian)
 
     ps = ParameterStudy(
         base_case=base_case,
         writeDir=writeDir,
         structure=structure,
-        categories=categories,
-        study_data=study_data,
+        parameters=parameters,
+        para_inputs=case_inputs,
     )
     _create_study_structure(ps)
 
 
-class Parameter:
+class ParaStudy_Data:
     def __init__(
-        self, cat_name, instructions: Category = None, data: List[Category_Data] = None
+        self, para_name, modifiers: Parameter, data: List[Parameter_Inputs] = None
     ):
-        self.cat_name = cat_name
-        self.instructions: Category = instructions
-        self.data: List[Category_Data] = data
+        self.para_name = para_name
+        self.modifiers: Parameter = modifiers
+        self.data: List[Parameter_Inputs] = data
 
-    def set_modifiers(
-        self,
-        instructions: List[Union[Dict[str, Any], Union[OF_Dict, String, Bash_Cmd]]],
-    ) -> "Parameter":
-        self.instructions = create_category(self.cat_name,instructions)
-        return self
+    def __setitem__(self,input_name,values):
+        if self.data is None:
+            self.data = []
+        if type(values) is not list:
+            values = [values]
+        self.data.append(Parameter_Inputs(input_name=input_name,values=values))
 
-    def set_data(
+    def set_inputs(
         self,
-        values: List[Any],
-        cat_names: Optional[List[str]] = None,
-        modifier: Cat_data_func = cat_data_modfunc,
-        data: List[Category_Data] = None,
-        **kwargs,
-    ) -> "Parameter":
-        if data is None:
-            self.data = create_category_data(values, cat_names, modifier, **kwargs)
-        else:
-            self.data = data
+        value_dict: Dict[str,List[Any]]
+    ) -> "ParaStudy_Data":
+        for k,v in value_dict.items():
+            self.__setitem__(k,v)
         return self
 
 
 class ParaStudy:
     def __init__(self, base_case):
         self.base_case = base_case
-        self._parameters: List[Parameter] = None
+        self._parameters: List[ParaStudy_Data] = None
 
     def add_parameter(
         self,
-        cat_name: str,
-        instructions: List[
+        name: str,
+        modify: List[
             Union[Dict[str, Any], Union[OF_Dict, String, Bash_Cmd]]
-        ] = None,
-        data: List[Category_Data] = None,
-    ) -> "Parameter":
+        ],
+        data: List[Parameter_Inputs] = None,
+    ) -> "ParaStudy_Data":
         if self._parameters is None:
             self._parameters = []
-        p = Parameter(cat_name, instructions=instructions, data=data)
+        mods =  create_parameter(para_name=name,modify=modify)
+        p = ParaStudy_Data(name, modifiers=mods, data=data)
 
         self._parameters.append(p)
 
         return self._parameters[-1]
 
-    def parameter(self, cat_name: str) -> "Parameter":
+    def parameter(self, name: str) -> "ParaStudy_Data":
         for p in self._parameters:
-            if p.cat_name == cat_name:
+            if p.para_name == name:
                 return p
         raise KeyError("parameter not found")
 
     def create_study(self) -> None:
         # validate
-        print([i.instructions for i in self._parameters])
-        print([i.data for i in self._parameters])
         create_study_structure(
             base_case=self.base_case,
-            categories=[i.instructions for i in self._parameters],
-            study_data=[i.data for i in self._parameters],
+            parameters=[i.modifiers for i in self._parameters],
+            case_inputs=[i.data for i in self._parameters],
         )

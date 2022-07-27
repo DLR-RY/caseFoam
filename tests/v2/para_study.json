@@ -2,71 +2,71 @@
   "base_case": "testCase",
   "writeDir": "Cases",
   "structure": "tree",
-  "categories": [
+  "parameters": [
     {
       "name": "var_0",
-      "instructions": [
+      "modifiers": [
         {
-          "instruction_type": "of_dict",
           "file_name": "0/U",
-          "entry": "boundaryField/inlet/value"
+          "entry": "boundaryField/inlet/value",
+          "instruction_type": "of_dict"
         }
       ]
     },
     {
       "name": "var_1",
-      "instructions": [
+      "modifiers": [
         {
-          "instruction_type": "of_dict",
           "file_name": "0/T",
-          "entry": "boundaryField/inlet/value"
+          "entry": "boundaryField/inlet/value",
+          "instruction_type": "of_dict"
         }
       ]
     },
     {
       "name": "var_2",
-      "instructions": [
+      "modifiers": [
         {
-          "instruction_type": "of_dict",
           "file_name": "0/p",
-          "entry": "boundaryField/inlet/value"
+          "entry": "boundaryField/inlet/value",
+          "instruction_type": "of_dict"
         }
       ]
     },
     {
       "name": "var_3",
-      "instructions": [
+      "modifiers": [
         {
-          "instruction_type": "string",
           "file_name": "system/stringTest.txt",
-          "entry": "STRINGMARKER"
+          "entry": "STRINGMARKER",
+          "instruction_type": "string"
         }
       ]
     }
   ],
-  "study_data": [
+  "para_inputs": [
     {
       "case_data": [
         {
-          "cat_name": "Ux1",
+          "input_name": "Ux1",
           "values": [
-            1
+            "1"
           ]
         },
         {
-          "cat_name": "T1",
+          "input_name": "T1",
           "values": [
-            1
+            "1"
           ]
         },
         {
-          "cat_name": "p1",
+          "input_name": "p1",
           "values": [
-            1
+            "1"
           ]
         },
         {
-          "cat_name": "string10",
+          "input_name": "string10",
           "values": [
             "10"
           ]
@@ -76,25 +76,25 @@
     {
       "case_data": [
         {
-          "cat_name": "Ux3",
+          "input_name": "Ux3",
           "values": [
-            3
+            "3"
           ]
         },
         {
-          "cat_name": "T1",
+          "input_name": "T1",
           "values": [
-            1
+            "1"
           ]
         },
         {
-          "cat_name": "p1",
+          "input_name": "p1",
           "values": [
-            1
+            "1"
           ]
         },
         {
-          "cat_name": "string10",
+          "input_name": "string10",
           "values": [
             "10"
           ]

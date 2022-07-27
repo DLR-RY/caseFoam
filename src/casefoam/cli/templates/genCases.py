@@ -1,33 +1,45 @@
 from casefoam.genCases import (
-    create_category,
     String,
     OF_Dict,
-    create_study_structure,
-    create_category_data,
+    Bash_Cmd,
+    ParaStudy,
 )
 
-baseCase = "REPLACE_CASE"
 
-cat_1 = create_category(
-    cat_name="some_var",
-    instructions=[String(file_name="system/simulationParameters", entry="some_var")],
+def grid_vars(factor):
+    l = [23 * factor, 4 * factor]
+    return list(map(str, l))
+
+# base case for the generation of the other cases
+ps = ParaStudy(base_case="REPLACE_CASE")
+
+# add Parameters and what to change from the base case
+p_1 = ps.add_parameter(
+    "p_1",
+    modify=[String(file_name="system/setFieldsDict", entry="some_value")],
 )
-cat_2 = create_category(
-    cat_name="Res",
-    instructions=[
+Res = ps.add_parameter(
+    "Res",
+    modify=[
         OF_Dict(file_name="system/simulationParameters", entry="deltax"),
         OF_Dict(file_name="system/simulationParameters", entry="deltay"),
     ],
 )
 
+# add parameter inputs 
+# specify the name of the input and the value 
+p_1["height_02"] = "0.2"
+p_1["height_03"] = "0.3"
+p_1["height_04"] = "0.4"
 
-grid_data = [[10, 10], [20, 20], [30, 30]]
+res_data = {
+    "grid1": grid_vars(1),
+    "grid2": grid_vars(2),
+    "grid3": grid_vars(3),
+}
+Res.set_inputs(res_data)
 
-cat_data_1 = create_category_data(grid_data, cat_names=["grid1", "grid2", "grid3"])
-cat_data_2 = create_category_data(
-    ["0.2", "0.3", "0.4"], cat_names=["var_02", "var_03", "var_04"]
-)
-
-create_study_structure(
-    base_case=baseCase, categories=[cat_1, cat_2], study_data=[cat_data_1, cat_data_2]
-)
+# case are created with the cartesian product aka every possible 
+# parameter input is varied
+# create the nine modified cases
+ps.create_study()

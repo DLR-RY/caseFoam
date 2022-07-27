@@ -7,9 +7,9 @@
       "name": "height",
       "instructions": [
         {
-          "instruction_type": "string",
           "file_name": "system/setFieldsDict",
-          "entry": "var_height"
+          "entry": "var_height",
+          "instruction_type": "string"
         }
       ]
     },
@@ -17,29 +17,29 @@
       "name": "Res",
       "instructions": [
         {
-          "instruction_type": "string",
           "file_name": "system/blockMeshDict",
-          "entry": "varA"
+          "entry": "varA",
+          "instruction_type": "string"
         },
         {
-          "instruction_type": "string",
           "file_name": "system/blockMeshDict",
-          "entry": "varB"
+          "entry": "varB",
+          "instruction_type": "string"
         },
         {
-          "instruction_type": "string",
           "file_name": "system/blockMeshDict",
-          "entry": "varC"
+          "entry": "varC",
+          "instruction_type": "string"
         },
         {
-          "instruction_type": "string",
           "file_name": "system/blockMeshDict",
-          "entry": "varD"
+          "entry": "varD",
+          "instruction_type": "string"
         },
         {
-          "instruction_type": "string",
           "file_name": "system/blockMeshDict",
-          "entry": "varE"
+          "entry": "varE",
+          "instruction_type": "string"
         }
       ]
     }

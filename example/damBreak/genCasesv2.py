@@ -1,21 +1,6 @@
 from casefoam.genCases import (
-    create_category,
     String,
-    create_study_structure,
-    create_category_data,
-)
-
-baseCase = "damBreak"
-
-instructions = [
-    String(file_name="system/blockMeshDict", entry=e)
-    for e in ["varA", "varB", "varC", "varD", "varE"]
-]
-grid = create_category(cat_name="Res", instructions=instructions)
-
-height = create_category(
-    cat_name="height",
-    instructions=[String(file_name="system/setFieldsDict", entry="var_height")],
+    ParaStudy,
 )
 
 
@@ -24,13 +9,33 @@ def grid_vars(factor):
     return list(map(str, l))
 
 
-grid_data = [grid_vars(1), grid_vars(2), grid_vars(3)]
+ps = ParaStudy(base_case="damBreak")
 
-grids = create_category_data(grid_data, cat_names=["grid1", "grid2", "grid3"])
-heights = create_category_data(
-    ["0.2", "0.3", "0.4"], cat_names=["height_02", "height_03", "height_04"]
+# add Parameters with modifiers
+fluidHeight = ps.add_parameter(
+    "fluidHeight",
+    modify=[String(file_name="system/setFieldsDict", entry="var_fluidHeight")],
+)
+Resolution = ps.add_parameter(
+    "Resolution",
+    modify=[
+        String(file_name="system/blockMeshDict", entry=e)
+        for e in ["varA", "varB", "varC", "varD", "varE"] 
+    ], # add 5 modifiers that overwrite varA to varE
 )
 
-create_study_structure(
-    base_case=baseCase, categories=[height, grid], study_data=[heights, grids]
-)
+# add parameter inputs
+fluidHeight["fluidHeight_02"] = "0.2"
+fluidHeight["fluidHeight_03"] = "0.3"
+fluidHeight["fluidHeight_04"] = "0.4"
+
+res_data = {
+    "grid1": grid_vars(1),
+    "grid2": grid_vars(2),
+    "grid3": grid_vars(3),
+}
+
+Resolution.set_inputs(res_data)
+
+# create the modified cases
+ps.create_study()
