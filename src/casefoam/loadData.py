@@ -2,7 +2,9 @@ import os
 from typing import List
 import pandas as pd
 from PyFoam.RunDictionary.ParsedParameterFile import ParsedParameterFile
-
+from pathlib import Path
+from casefoam import utility
+from casefoam import postFunctions
 
 def getCases(solutionDir, caseStructure, baseCase, postDir="postProcessing"):
     """Get cases.
@@ -26,13 +28,27 @@ def getCases(solutionDir, caseStructure, baseCase, postDir="postProcessing"):
         A list with all case combinations as tuples.
 
     """
+    cases = list()
+    caseCombs = list()
+    
     if caseStructure is None:
-        return [os.path.join(baseCase, postDir, solutionDir)], [(baseCase,)]
+        of_cases = utility.of_cases(baseCase)
+
+        if len(of_cases) == 1:
+            return [Path(baseCase, postDir, solutionDir)], [(baseCase,)]
+
+        for case in of_cases:
+            _path = Path(case, postDir, solutionDir)
+
+            if _path.is_dir():
+                    cases.append(_path)
+                    caseComb = Path(case).parts[1:]
+                    caseCombs.append(caseComb)
+
+        return cases.copy(), caseCombs.copy() 
 
     multiIndex = pd.MultiIndex.from_product(caseStructure)
     allCaseCombs = multiIndex.values
-    cases = list()
-    caseCombs = list()
 
     try:
 
@@ -63,8 +79,12 @@ def getCases(solutionDir, caseStructure, baseCase, postDir="postProcessing"):
 def get_header(file):
     with open(file, "r") as f:
         lines = [f.readline().strip() for i in range(20)]
+    
+    comment_lines = [loc for loc, val in enumerate(lines) if "#" in val]
+    if len(comment_lines) == 0:
+        return []
 
-    last_comment = max(loc for loc, val in enumerate(lines) if "#" in val)
+    last_comment = max(comment_lines)
 
     columns = lines[last_comment]
     for remove_char in "()#":
@@ -380,6 +400,52 @@ def posField_to_timeSeries(
             )
 
             dfs.append(surfaceDataFrame)
+    outputDf = pd.concat(dfs, axis=0)
+
+    return outputDf
+
+
+def load_functionObject(
+    solutionDir,
+    file,
+    time= None,
+    postFunction = postFunctions.appendTimes,
+    OfCases=".",
+    header_from_file=True,
+    **kwargs,
+):
+    outputDf = pd.DataFrame()
+    cases, caseCombs = getCases(solutionDir, None, OfCases)
+
+    dfs = []
+    for i, caseComb in enumerate(caseCombs):
+        times = os.listdir(cases[i])
+
+        if time is not None:
+            currentSolutionFile = os.path.join(cases[i], time, file)
+            df = load_df(
+                currentSolutionFile,
+                caseComb,
+                time=float(time),
+                apply_func=postFunction,
+                header_from_file=header_from_file,
+                **kwargs,
+            )
+            dfs.append(df)
+        else:
+
+            for time in times:
+                currentSolutionFile = os.path.join(cases[i], time, file)
+                df = load_df(
+                    currentSolutionFile,
+                    caseComb,
+                    time=float(time),
+                    apply_func=postFunction,
+                    header_from_file=header_from_file,
+                    **kwargs,
+                )
+
+            dfs.append(df)
     outputDf = pd.concat(dfs, axis=0)
 
     return outputDf

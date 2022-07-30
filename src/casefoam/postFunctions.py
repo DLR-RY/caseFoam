@@ -19,6 +19,12 @@ the parameters ``(caseComb, time, currentDataFrame, outputDf)``:
 import numpy as np
 import pandas as pd
 
+def appendTimes(caseComb, time, currentDataFrame):
+    """appends all time in a function object
+
+    """
+
+    return currentDataFrame
 
 def getFreeSurfaceWallAndCentre(caseComb, time, currentDataFrame, axis=0):
     """Return the max, min and mean of the given axis.
