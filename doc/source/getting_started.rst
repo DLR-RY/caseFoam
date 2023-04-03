@@ -25,10 +25,7 @@ The installation of pyviz_ is not necessary but we recommended:
 
    $ conda install -c pyviz/label/dev pyviz
 
-
-Details regarding the installation of pyviz are avaiable here_.
-
-.. _here: http://pyviz.org/installation.html
+.. Link is outdated and pyviz ships with default anaconda as far as I understand. To my understanding one could even delete the conda install part.
 
 User's Guide
 ------------
