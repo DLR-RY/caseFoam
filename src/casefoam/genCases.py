@@ -241,14 +241,14 @@ def _create_study_structure(ps: ParameterStudy) -> None:
     case_vars = case_variations(cases)
 
     with open(Path("para_study.json"), "w") as f:
-        f.write(ps.json(indent=2))
+        f.write(ps.model_dump_json(indent=2))
 
     dir_cases = case_struct(case_vars, writeDir=ps.writeDir, structure=ps.structure)
 
     for c, d in zip(cases.cases, dir_cases):
         shutil.copytree(ps.base_case, d)
         with open(Path(d, "case.json"), "w") as f:
-            f.write(c.json(indent=2))
+            f.write(c.model_dump_json(indent=2))
 
     pwd = os.getcwd()
     for c, d in zip(cases.cases, dir_cases):
