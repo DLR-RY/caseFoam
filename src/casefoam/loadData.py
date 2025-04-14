@@ -6,6 +6,7 @@ from pathlib import Path
 from casefoam import utility
 from casefoam import postFunctions
 
+
 def getCases(solutionDir, caseStructure, baseCase, postDir="postProcessing"):
     """Get cases.
 
@@ -30,7 +31,7 @@ def getCases(solutionDir, caseStructure, baseCase, postDir="postProcessing"):
     """
     cases = list()
     caseCombs = list()
-    
+
     if caseStructure is None:
         of_cases = utility.of_cases(baseCase)
 
@@ -41,11 +42,11 @@ def getCases(solutionDir, caseStructure, baseCase, postDir="postProcessing"):
             _path = Path(case, postDir, solutionDir)
 
             if _path.is_dir():
-                    cases.append(_path)
-                    caseComb = Path(case).parts[1:]
-                    caseCombs.append(caseComb)
+                cases.append(_path)
+                caseComb = Path(case).parts[1:]
+                caseCombs.append(caseComb)
 
-        return cases.copy(), caseCombs.copy() 
+        return cases.copy(), caseCombs.copy()
 
     multiIndex = pd.MultiIndex.from_product(caseStructure)
     allCaseCombs = multiIndex.values
@@ -53,15 +54,8 @@ def getCases(solutionDir, caseStructure, baseCase, postDir="postProcessing"):
     try:
 
         for caseComb in allCaseCombs:
-            _len = len(caseComb)
-            _path = baseCase
-
-            for i in range(_len):
-                _path = os.path.join(_path, caseComb[i])
-
-            _path = os.path.join(_path, postDir, solutionDir)
-
-            if os.path.isdir(_path):
+            _path = Path(baseCase, *caseComb, postDir, solutionDir)
+            if _path.is_dir():
                 cases.append(_path)
                 caseCombs.append(caseComb)
     except AttributeError:  # handle caseStructures with only one level
@@ -79,7 +73,7 @@ def getCases(solutionDir, caseStructure, baseCase, postDir="postProcessing"):
 def get_header(file):
     with open(file, "r") as f:
         lines = [f.readline().strip() for i in range(20)]
-    
+
     comment_lines = [loc for loc, val in enumerate(lines) if "#" in val]
     if len(comment_lines) == 0:
         return []
@@ -408,8 +402,8 @@ def posField_to_timeSeries(
 def load_functionObject(
     solutionDir,
     file,
-    time= None,
-    postFunction = postFunctions.appendTimes,
+    time=None,
+    postFunction=postFunctions.appendTimes,
     OfCases=".",
     header_from_file=True,
     **kwargs,

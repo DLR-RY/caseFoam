@@ -4,11 +4,14 @@ import pandas as pd
 import seaborn as sns
 import casefoam
 import numpy as np
+from pathlib import Path
 
-caseStructure = [['height_02', 'height_03', 'height_04'],
+caseStructure = [['fluidHeight_02', 'fluidHeight_03', 'fluidHeight_04'],
                  ['grid1', 'grid2', 'grid3']]
-baseCase = 'Cases'
-probeDir = 'probes/0'
+
+file_location = Path(__file__).parent.resolve()
+baseCase = str(file_location / 'Cases')
+probeDir = 'probes/0/'
 surfaceDir = 'freeSurface'
 setDir = 'sample1'
 

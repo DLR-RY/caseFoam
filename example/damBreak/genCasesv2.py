@@ -14,7 +14,7 @@ ps = ParaStudy(base_case="damBreak")
 # add Parameters with modifiers
 fluidHeight = ps.add_parameter(
     "fluidHeight",
-    modify=[String(file_name="system/setFieldsDict", entry="var_fluidHeight")],
+    modify=[String(file_name="system/setFieldsDict", entry="var_height")],
 )
 Resolution = ps.add_parameter(
     "Resolution",
